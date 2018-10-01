@@ -26,7 +26,6 @@ const init = () => {
   const app = express();
   const port = config.common.port || 8080;
   module.exports = app;
-
   app.use('/docs', express.static(path.join(__dirname, 'docs')));
 
   // Client must send "Content-Type: application/json" header
