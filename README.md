@@ -1,6 +1,6 @@
 # training
 
-training
+training.
 
 ## First steps
 
