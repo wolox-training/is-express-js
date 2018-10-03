@@ -1,3 +1,5 @@
+const errors = require('../errors');
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'user',
@@ -28,6 +30,5 @@ module.exports = (sequelize, DataTypes) => {
       underscored: true
     }
   );
-
   return User;
 };

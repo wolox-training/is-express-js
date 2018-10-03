@@ -1,17 +1,6 @@
-/* const User = require('./../models').user;
-
-const emailDomain = 'wolox.com.ar';
-
-exports.emailValidation = email => {
-  const test = email.split('@')[1];
-  if (test === emailDomain) {
-    console.log('validado');
-  } else {
-    console.log('foo');
-  }
-};
-*/
-const logger = require('../logger');
+const logger = require('../logger'),
+  errors = require('../errors'),
+  User = require('./../models').user;
 
 exports.signUpValidation = (req, res, next) => {
   const params = req.body
@@ -25,15 +14,20 @@ exports.signUpValidation = (req, res, next) => {
 
   req.body.flagValidationOK = false;
   const emailDomain = '@wolox.com.ar';
-  if (params.email && params.email.includes(emailDomain) === false) {
-    // wrong domain;
-    return res.status(400).send('Invalid email');
-  } else if (params.password && params.password.length < 8) {
-    // short pass
-    return res.status(400).send('Invalid Password');
-  } else {
-    req.body.flagValidationOK = true; // aviso que salio todo bien
-    req.body.userParams = params;
-    next();
-  }
+  const regex = new RegExp('w+');
+  User.findOne({where: { email: params.email }})
+    .then(value => {
+      if (value && value.email === params.email) {
+        return res.status(400).send('This email is already in this Database');
+      }
+      if (params.email && params.email.includes(emailDomain) === false) {
+        return res.status(400).send('Invalid email');
+      } else if (params.password && regex.test(params.password) === true && params.password.length < 8) {
+        return res.status(400).send('Invalid Password');
+      } else {
+        req.body.flagValidationOK = true;
+        req.body.userParams = params;
+        next();
+      }
+    });
 };
