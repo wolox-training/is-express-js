@@ -17,12 +17,12 @@ exports.signUpValidation = (req, res, next) => {
     saltRounds = 10;
   User.findOne({ where: { email: params.email } }).then(value => {
     if (value && value.email === params.email) {
-      return res.status(400).send('This email is already in this Database');
+      return next(errors.notUniqueEmail);
     }
     if (params.email && params.email.includes(emailDomain) === false) {
-      return res.status(400).send('Invalid email');
+      return next(errors.invalidEmail);
     } else if ((params.password && regex.test(params.password) === false) || params.password.length < 8) {
-      return res.status(400).send('Invalid Password');
+      return next(errors.invalidPassword);
     } else {
       bcrypt
         .hash(params.password, saltRounds)
@@ -32,7 +32,7 @@ exports.signUpValidation = (req, res, next) => {
           next();
         })
         .catch(err => {
-          next(errors.defaultError(err));
+          next(errors.defaultError);
         });
     }
   });
