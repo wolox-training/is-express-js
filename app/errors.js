@@ -17,3 +17,4 @@ exports.defaultError = {
   statusCode: 400,
   message: 'Default Error'
 };
+
