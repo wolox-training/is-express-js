@@ -18,3 +18,7 @@ exports.defaultError = {
   message: 'Default Error'
 };
 
+exports.invalidUser = {
+  statusCode: 400,
+  message: 'Invalid User'
+};
