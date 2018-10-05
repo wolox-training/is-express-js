@@ -1,7 +1,7 @@
 const jwt = require('jwt-simple'),
   config = require('./../../config');
 
-const SECRET = config.common.session.secret; // Despues cambiar el secreto porque no funciona
+const SECRET = config.common.session.secret;
 
 exports.HEADER_NAME = config.common.session.header_name;
 

@@ -1,7 +1,8 @@
 'use strict';
 
 const User = require('../models').user,
-  sessionManager = require('./../services/sessionManager'),
+  errors = require('../errors'),
+  bcrypt = require('bcryptjs'),
   logger = require('../logger');
 
 exports.create = (req, res, next) => {
@@ -18,9 +19,16 @@ exports.create = (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
-  const params = req.body.userParams;
-  res.status(200);
-  res.set(sessionManager.HEADER_NAME, params.auth);
-  logger.info(`User with email ${params.email} correctly sign-in`);
-  res.send(params);
+  const token = req.body.auth,
+    pass = req.body.password,
+    dbPass = req.body.dbPass;
+  bcrypt.compare(pass, dbPass).then(validPass => {
+    if (validPass) {
+      logger.info(`User correctly sign-in`);
+      res.status(200).send({ token });
+    } else {
+      logger.info(`User used an invalid password`);
+      next(errors.invalidPassword);
+    }
+  });
 };

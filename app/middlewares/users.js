@@ -1,7 +1,7 @@
 const logger = require('../logger'),
   errors = require('../errors'),
   User = require('./../models').user,
-  jwt = require('jwt-simple'),
+  sessionManager = require('./../services/sessionManager'),
   bcrypt = require('bcryptjs');
 
 exports.signUpValidation = (req, res, next) => {
@@ -40,32 +40,19 @@ exports.signUpValidation = (req, res, next) => {
 };
 
 exports.signInValidation = (req, res, next) => {
-  const params = req.body
-      ? {
-          password: req.body.password,
-          email: req.body.email
-        }
-      : {},
+  const params = req.body ? { email: req.body.email } : {},
     emailDomain = '@wolox.com.ar',
-    secret = 'This is superTopArchiMegaTeraTopAgain Secret',
-    saltRounds = 10;
+    auth = sessionManager.encode({ email: params.email }),
+    headerToken = req.headers.authorization;
   User.findOne({ where: { email: params.email } }).then(value => {
     if (!value || (params.email && params.email.includes(emailDomain) === false)) {
       return next(errors.invalidEmail);
+    } else if (!headerToken || headerToken !== auth) {
+      req.body.auth = auth;
+      req.body.dbPass = value.password;
+      next();
     } else {
-      bcrypt.compare(params.password, value.password).then(validPass => {
-        if (validPass) {
-          params.auth = jwt.encode({ email: params.email }, secret);
-          if(res.get(header.auth)){
-            logger.info(`User with email ${res.get(Headers.auth)} used an invalid password`);   
-          }         
-          req.body.userParams = params;
-          next();
-        } else {
-          logger.info(`User with email ${params.email} used an invalid password`);
-          next(errors.invalidPassword);
-        }
-      });
+      return next(errors.loggedUser);
     }
   });
 };
