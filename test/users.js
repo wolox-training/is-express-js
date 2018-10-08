@@ -34,7 +34,7 @@ describe('users', () => {
             });
         });
     });
-    it.only('should fail because there is no user logged', done => {
+    it('should fail because there is no user logged', done => {
       chai // creo un usuario
         .request(server)
         .post('/users')
