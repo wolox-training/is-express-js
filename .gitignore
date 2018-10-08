@@ -48,5 +48,8 @@ node_modules
 # VS Code
 .vscode/
 
-#config
+# config
 .config/.env
+
+# docs
+docs

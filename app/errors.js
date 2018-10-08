@@ -18,3 +18,12 @@ exports.defaultError = {
   message: 'Default Error'
 };
 
+exports.invalidUser = {
+  statusCode: 400,
+  message: 'Invalid User'
+};
+
+exports.loggedUser = {
+  statusCode: 400,
+  message: 'User already logged'
+};
