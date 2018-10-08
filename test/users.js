@@ -4,6 +4,58 @@ const chai = require('chai'),
   should = chai.should();
 
 describe('users', () => {
+  describe('/users GET', () => {
+    it('should print all the users', done => {
+      chai // creo un usuario
+        .request(server)
+        .post('/users')
+        .send({
+          firstName: 'ignacio',
+          lastName: 'sosa',
+          email: 'nacho.sosa@wolox.com.ar',
+          password: '123456789'
+        })
+        .then(res => {
+          chai // me loggeo
+            .request(server)
+            .post('/users/sessions')
+            .send({ email: 'nacho.sosa@wolox.com.ar', password: '123456789' })
+            .then(resolve => {
+              chai
+                .request(server)
+                .get('/users')
+                .set('authorization', resolve.body.token)
+                .then(ress => {
+                  ress.should.have.status(200);
+                  res.should.be.json;
+                  dictum.chai(res);
+                  done();
+                });
+            });
+        });
+    });
+    it.only('should fail because there is no user logged', done => {
+      chai // creo un usuario
+        .request(server)
+        .post('/users')
+        .send({
+          firstName: 'ignacio',
+          lastName: 'sosa',
+          email: 'nacho.sosa@wolox.com.ar',
+          password: '123456789'
+        })
+        .then(resolve => {
+          chai
+            .request(server)
+            .get('/users')
+            .catch(err => {
+              err.should.have.status(400);
+              err.response.body.should.have.property('error');
+              done();
+            });
+        });
+    });
+  });
   describe('/users POST', () => {
     it('should create user ok', done => {
       chai

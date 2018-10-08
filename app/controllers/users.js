@@ -32,3 +32,13 @@ exports.login = (req, res, next) => {
     }
   });
 };
+
+exports.printAllUser = (req, res, next) => {
+  User.getAll()
+    .then(users => {
+      res.status(200).send({ users });
+    })
+    .catch(error => {
+      next(error);
+    });
+};

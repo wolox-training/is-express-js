@@ -56,3 +56,12 @@ exports.signInValidation = (req, res, next) => {
     }
   });
 };
+
+exports.tokenValidation = (req, res, next) => {
+  const headerToken = req.headers.authorization ? req.headers.authorization : false;
+  if (headerToken) {
+    next();
+  } else {
+    return next(errors.tokenError);
+  }
+};

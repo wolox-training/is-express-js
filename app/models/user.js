@@ -30,5 +30,16 @@ module.exports = (sequelize, DataTypes) => {
       underscored: true
     }
   );
+
+  User.getAll = (props, limit = 20, offset = 0) => {
+    return User.findAll({
+      where: props,
+      offset,
+      limit
+    }).catch(err => {
+      throw errors.databaseError;
+    });
+  };
+
   return User;
 };
