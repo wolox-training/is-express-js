@@ -52,5 +52,4 @@ node_modules
 .config/.env
 
 #docs
-
-.docs/
+docs
