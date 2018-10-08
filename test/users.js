@@ -133,10 +133,13 @@ describe('users', () => {
             .request(server)
             .post('/users/sessions')
             .send({ email: 'nacho.sosa@wolox.com.ar', password: '123456789' })
-            .then(resolve => {});
+            .then(ress => {
+              ress.should.have.status(200);
+              done();
+            });
         });
     });
-    it.only('should fail because user already logged in', done => {
+    it('should fail because user already logged in', done => {
       chai
         .request(server)
         .post('/users')
