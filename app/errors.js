@@ -35,5 +35,5 @@ exports.databaseError = {
 
 exports.tokenError = {
   statusCode: 400,
-  message: 'No user logged'
+  message: 'User not logged'
 };

@@ -59,9 +59,21 @@ exports.signInValidation = (req, res, next) => {
 
 exports.tokenValidation = (req, res, next) => {
   const headerToken = req.headers.authorization ? req.headers.authorization : false;
-  if (headerToken) {
-    next();
+  if (!headerToken) {
+    next(errors.tokenError);
   } else {
-    return next(errors.tokenError);
+    let userEmail = '';
+    try {
+      userEmail = sessionManager.decode(headerToken);
+    } catch (error) {
+      next(errors.tokenError);
+    }
+    User.findOne({ where: userEmail }).then(u => {
+      if (!u) {
+        next(errors.tokenError);
+      } else {
+        next();
+      }
+    });
   }
 };

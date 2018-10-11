@@ -31,7 +31,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  User.getAll = (props, limit = 20, offset = 0) => {
+  User.getAll = (props, limit = 5, offset = 0) => {
     return User.findAll({
       where: props,
       offset,
