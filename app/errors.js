@@ -37,3 +37,8 @@ exports.tokenError = {
   statusCode: 400,
   message: 'User not logged'
 };
+
+exports.invalidToken = {
+  statusCode: 400,
+  message: 'Token is not valid'
+};

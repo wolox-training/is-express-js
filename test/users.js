@@ -6,7 +6,7 @@ const chai = require('chai'),
 describe('users', () => {
   describe('/users GET', () => {
     it('should print all the users', done => {
-      chai // creo un usuario
+      chai
         .request(server)
         .post('/users')
         .send({
@@ -15,27 +15,59 @@ describe('users', () => {
           email: 'nacho.sosa@wolox.com.ar',
           password: '123456789'
         })
-        .then(res => {
-          chai // me loggeo
+        .then(userTwo => {
+          chai
             .request(server)
-            .post('/users/sessions')
-            .send({ email: 'nacho.sosa@wolox.com.ar', password: '123456789' })
-            .then(resolve => {
+            .post('/users')
+            .send({
+              firstName: 'dante',
+              lastName: 'farias',
+              email: 'dante.farias@wolox.com.ar',
+              password: '123456789'
+            })
+            .then(userThree => {
               chai
                 .request(server)
-                .get('/users')
-                .set('authorization', resolve.body.token)
-                .then(ress => {
-                  ress.should.have.status(200);
-                  res.should.be.json;
-                  dictum.chai(res);
-                  done();
+                .post('/users')
+                .send({
+                  firstName: 'maria',
+                  lastName: 'delacamara',
+                  email: 'maria.dela@wolox.com.ar',
+                  password: '123456789'
+                })
+                .then(res => {
+                  chai
+                    .request(server)
+                    .post('/users/sessions')
+                    .send({ email: 'nacho.sosa@wolox.com.ar', password: '123456789' })
+                    .then(resolve => {
+                      chai
+                        .request(server)
+                        .get('/users/1')
+                        .set('authorization', resolve.body.token)
+                        .then(ress => {
+                          ress.should.have.status(200);
+                          ress.should.be.json;
+                          ress.body.users.length.should.equals(2);
+                          chai
+                            .request(server)
+                            .get('/users/2')
+                            .set('authorization', resolve.body.token)
+                            .then(resp => {
+                              resp.should.have.status(200);
+                              resp.should.be.json;
+                              resp.body.users.length.should.equals(1);
+                              dictum.chai(res);
+                              done();
+                            });
+                        });
+                    });
                 });
             });
         });
     });
     it('should fail because there is no user logged', done => {
-      chai // creo un usuario
+      chai
         .request(server)
         .post('/users')
         .send({
@@ -47,11 +79,39 @@ describe('users', () => {
         .then(resolve => {
           chai
             .request(server)
-            .get('/users')
+            .get('/users/1')
             .catch(err => {
               err.should.have.status(400);
               err.response.body.should.have.property('error');
               done();
+            });
+        });
+    });
+    it('should fail because of not token validation', done => {
+      chai
+        .request(server)
+        .post('/users')
+        .send({
+          firstName: 'ignacio',
+          lastName: 'sosa',
+          email: 'nacho.sosa@wolox.com.ar',
+          password: '123456789'
+        })
+        .then(res => {
+          chai
+            .request(server)
+            .post('/users/sessions')
+            .send({ email: 'nacho.sosa@wolox.com.ar', password: '123456789' })
+            .then(resolve => {
+              chai
+                .request(server)
+                .get('/users/1')
+                .set('authorization', 'wrongTokenValue')
+                .catch(err => {
+                  err.should.have.status(400);
+                  err.response.body.should.have.property('error');
+                  done();
+                });
             });
         });
     });

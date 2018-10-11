@@ -66,11 +66,11 @@ exports.tokenValidation = (req, res, next) => {
     try {
       userEmail = sessionManager.decode(headerToken);
     } catch (error) {
-      next(errors.tokenError);
+      next(errors.invalidToken);
     }
     User.findOne({ where: userEmail }).then(u => {
       if (!u) {
-        next(errors.tokenError);
+        next(errors.invalidToken);
       } else {
         next();
       }
