@@ -51,3 +51,29 @@ exports.printSomeUser = (req, res, next) => {
       next(error);
     });
 };
+
+exports.createOrUpdateAdminUser = (req, res, next) =>{
+  if(req.updateFlag){
+    req.userFound.update(req.body.userParams)
+    .then(updatedUser => {
+      logger.info(`User with email ${updatedUser.email} correctly updated to Admin`);
+      res.status(200).send({ updatedUser });
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    }); 
+  }else{
+    const params = req.body.userParams;
+    User.create(params)
+    .then(newUser => {
+      logger.info(`User with email ${newUser.email} correctly created as Admin`);
+      res.status(200).send({ newUser });
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    });
+  }
+  
+};

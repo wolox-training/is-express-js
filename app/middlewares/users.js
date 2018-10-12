@@ -10,16 +10,19 @@ exports.signUpValidation = (req, res, next) => {
           firstName: req.body.firstName,
           lastName: req.body.lastName,
           password: req.body.password,
-          email: req.body.email
+          email: req.body.email,
+          isAdmin : req.user.isAdmin ? true : false
         }
       : {},
     emailDomain = '@wolox.com.ar',
     regex = new RegExp('^[0-9A-Za-z]+$'),
     saltRounds = 10;
   User.findOne({ where: { email: params.email } }).then(value => {
-    if (value && value.email === params.email && !req.user) {
-      return next(errors.notUniqueEmail);
-    }
+    if (value && value.email === params.email) {
+      if(!params.isAdmin){
+        return next(errors.notUniqueEmail);
+      }
+    } 
     if (!params.email || !params.email.includes(emailDomain)) {
       return next(errors.invalidEmail);
     } else if ((params.password && !regex.test(params.password)) || params.password.length < 8) {
@@ -28,8 +31,9 @@ exports.signUpValidation = (req, res, next) => {
       bcrypt
         .hash(params.password, saltRounds)
         .then(notPlanePass => {
-          params.password = notPlanePass;
-          req.body.userParams = params;
+          params.password = notPlanePass; 
+          req.body.userParams = params; //used at create process
+          req.userFound = value; // used at update or create process
           next();
         })
         .catch(err => {
@@ -86,4 +90,22 @@ exports.adminValidation = (req, res, next) => {
       else{
         next();
       }
+};
+
+exports.updateValidation = (req, res, next) => {
+  if(!req.userFound){
+    next();
+  }
+  else if(req.userFound.firstName !== req.body.userParams.firstName){
+    return next(errors.invalidUpdate);
+  }else if(req.userFound.lastName !== req.body.userParams.lastName){
+    return next(errors.invalidUpdate);
+  }else if(req.userFound.password !== req.body.userParams.password){
+    return next(errors.invalidUpdate);
+  }else if(req.userFound.email !== req.body.userParams.email){
+    return next(errors.invalidUpdate);
+  }else{
+    req.updateFlag = true;
+    next();
+  }
 };
