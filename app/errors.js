@@ -42,3 +42,7 @@ exports.invalidToken = {
   statusCode: 400,
   message: 'Token is not valid'
 };
+exports.invalidAdminUser = {
+  statusCode: 400,
+  message: 'This user is not an Admin'
+};

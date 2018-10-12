@@ -17,7 +17,7 @@ exports.signUpValidation = (req, res, next) => {
     regex = new RegExp('^[0-9A-Za-z]+$'),
     saltRounds = 10;
   User.findOne({ where: { email: params.email } }).then(value => {
-    if (value && value.email === params.email) {
+    if (value && value.email === params.email && !req.user) {
       return next(errors.notUniqueEmail);
     }
     if (!params.email || !params.email.includes(emailDomain)) {
@@ -72,8 +72,18 @@ exports.tokenValidation = (req, res, next) => {
       if (!u) {
         next(errors.invalidToken);
       } else {
+        req.user = u;
         next();
       }
     });
   }
+};
+
+exports.adminValidation = (req, res, next) => { 
+      if(!req.user.isAdmin){
+        next(errors.invalidAdminUser);
+      }
+      else{
+        next();
+      }
 };

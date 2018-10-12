@@ -5,4 +5,5 @@ exports.init = app => {
   app.get('/users/:page', [userMiddleware.tokenValidation], userController.printSomeUser);
   app.post('/users', [userMiddleware.signUpValidation], userController.create);
   app.post('/users/sessions', [userMiddleware.signInValidation], userController.login);
+  app.post('/admin/users', [], );
 };
