@@ -58,6 +58,23 @@ const successfulLogin = u => {
   };
 
 describe('users', () => {
+  describe('/admin/users POST', () => {
+    it('should create new user with isAdmin = true', done => {});
+    it('should create new user with isAdmin = false', done => {});
+    it('should create new user with isAdmin = undefined => true', done => {});
+    it('should not create user because of invalid password - short case', done => {});
+    it('should not create user because of invalid password - invalid char case', done => {});
+    it('should not create user because of invalid email', done => {});
+    it('should update user with isAdmin = true', done => {});
+    it('should update user with isAdmin = false', done => {});
+    it('should not update user because of wrong password', done => {});
+    it('should not update user because of wrong first name', done => {});
+    it('should not update user because of wrong last name', done => {});
+    it('should not update user because there is nothing to change', done => {});
+    it('should fail because there is no user logged-in', done => {});
+    it('should fail because not same token', done => {});
+    it('should fail because the user is not Admin', done => {});
+  });
   describe('/users GET', () => {
     it('should print all the users', done => {
       successfulCreate(userList.userOne).then(userTwo => {

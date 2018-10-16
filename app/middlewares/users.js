@@ -5,13 +5,24 @@ const logger = require('../logger'),
   bcrypt = require('bcryptjs');
 
 exports.signUpValidation = (req, res, next) => {
+  let flagAdmin = false;
+  if (typeof req.user !== 'undefined') {
+    if (req.user.isAdmin) {
+      flagAdmin = req.body.isAdmin ? req.body.isAdmin : true ;
+    } else {
+      next(errors.notAdminUser);
+    }
+  }
+  if (!flagAdmin && req.body.isAdmin === 'true') {
+    next(errors.invalidUserTryingToBeAdmin);
+  }
   const params = req.body
       ? {
           firstName: req.body.firstName,
           lastName: req.body.lastName,
           password: req.body.password,
           email: req.body.email,
-          isAdmin : req.user.isAdmin ? true : false
+          isAdmin: flagAdmin
         }
       : {},
     emailDomain = '@wolox.com.ar',
@@ -19,10 +30,10 @@ exports.signUpValidation = (req, res, next) => {
     saltRounds = 10;
   User.findOne({ where: { email: params.email } }).then(value => {
     if (value && value.email === params.email) {
-      if(!params.isAdmin){
+      if (!params.isAdmin) {
         return next(errors.notUniqueEmail);
       }
-    } 
+    }
     if (!params.email || !params.email.includes(emailDomain)) {
       return next(errors.invalidEmail);
     } else if ((params.password && !regex.test(params.password)) || params.password.length < 8) {
@@ -31,9 +42,10 @@ exports.signUpValidation = (req, res, next) => {
       bcrypt
         .hash(params.password, saltRounds)
         .then(notPlanePass => {
-          params.password = notPlanePass; 
-          req.body.userParams = params; //used at create process
-          req.userFound = value; // used at update or create process
+          params.password = notPlanePass;
+          req.originalPass = req.body.password;
+          req.body.userParams = params; 
+          req.userFound = value; 
           next();
         })
         .catch(err => {
@@ -83,29 +95,36 @@ exports.tokenValidation = (req, res, next) => {
   }
 };
 
-exports.adminValidation = (req, res, next) => { 
-      if(!req.user.isAdmin){
-        next(errors.invalidAdminUser);
-      }
-      else{
-        next();
-      }
+exports.adminValidation = (req, res, next) => {
+  if (!req.user.isAdmin) {
+    next(errors.invalidAdminUser);
+  } else {
+    next();
+  }
 };
 
 exports.updateValidation = (req, res, next) => {
-  if(!req.userFound){
+  if (!req.userFound) {
+    req.updateFlag = false;
     next();
-  }
-  else if(req.userFound.firstName !== req.body.userParams.firstName){
-    return next(errors.invalidUpdate);
-  }else if(req.userFound.lastName !== req.body.userParams.lastName){
-    return next(errors.invalidUpdate);
-  }else if(req.userFound.password !== req.body.userParams.password){
-    return next(errors.invalidUpdate);
-  }else if(req.userFound.email !== req.body.userParams.email){
-    return next(errors.invalidUpdate);
   }else{
-    req.updateFlag = true;
-    next();
-  }
+  bcrypt.compare(req.originalPass, req.userFound.password).then(validPass => {
+    if (validPass) {
+      if (req.userFound.firstName !== req.body.userParams.firstName) {
+        return next(errors.invalidUpdate);
+      } else if (req.userFound.lastName !== req.body.userParams.lastName) {
+        return next(errors.invalidUpdate);
+      } else if (req.userFound.email !== req.body.userParams.email) {
+        return next(errors.invalidUpdate);
+      } else if (req.userFound.isAdmin === JSON.parse(req.body.userParams.isAdmin)){
+        return next(errors.nothingToChange);
+      }else{
+        req.updateFlag = true;
+        next();
+      }
+    } else {
+      return next(errors.invalidUpdate);
+    }
+  });
+}
 };

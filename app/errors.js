@@ -52,3 +52,18 @@ exports.invalidUpdate = {
   statusCode: 400,
   message: 'Some input does not match with DB'
 };
+
+exports.notAdminUser = {
+  statusCode: 400,
+  message: 'You are not admin user'
+};
+
+exports.invalidUserTryingToBeAdmin = {
+  statusCode: 400,
+  message: 'You are not suppose to be an Admin'
+};
+
+exports.nothingToChange = {
+  statusCode: 400,
+  message: 'There is nothing to change'
+};
