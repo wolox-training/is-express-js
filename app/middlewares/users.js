@@ -8,7 +8,7 @@ exports.signUpValidation = (req, res, next) => {
   let flagAdmin = false;
   if (typeof req.user !== 'undefined') {
     if (req.user.isAdmin) {
-      flagAdmin = req.body.isAdmin ? req.body.isAdmin : true ;
+      flagAdmin = req.user.isAdmin;
     } else {
       next(errors.notAdminUser);
     }
@@ -22,7 +22,7 @@ exports.signUpValidation = (req, res, next) => {
           lastName: req.body.lastName,
           password: req.body.password,
           email: req.body.email,
-          isAdmin: flagAdmin
+          isAdmin: typeof req.body.isAdmin !== 'undefined' ? JSON.parse(req.body.isAdmin) : true
         }
       : {},
     emailDomain = '@wolox.com.ar',
@@ -30,7 +30,7 @@ exports.signUpValidation = (req, res, next) => {
     saltRounds = 10;
   User.findOne({ where: { email: params.email } }).then(value => {
     if (value && value.email === params.email) {
-      if (!params.isAdmin) {
+      if (!flagAdmin) {
         return next(errors.notUniqueEmail);
       }
     }
@@ -44,8 +44,8 @@ exports.signUpValidation = (req, res, next) => {
         .then(notPlanePass => {
           params.password = notPlanePass;
           req.originalPass = req.body.password;
-          req.body.userParams = params; 
-          req.userFound = value; 
+          req.body.userParams = params;
+          req.userFound = value;
           next();
         })
         .catch(err => {
@@ -107,24 +107,24 @@ exports.updateValidation = (req, res, next) => {
   if (!req.userFound) {
     req.updateFlag = false;
     next();
-  }else{
-  bcrypt.compare(req.originalPass, req.userFound.password).then(validPass => {
-    if (validPass) {
-      if (req.userFound.firstName !== req.body.userParams.firstName) {
+  } else {
+    bcrypt.compare(req.originalPass, req.userFound.password).then(validPass => {
+      if (validPass) {
+        if (req.userFound.firstName !== req.body.userParams.firstName) {
+          return next(errors.invalidUpdate);
+        } else if (req.userFound.lastName !== req.body.userParams.lastName) {
+          return next(errors.invalidUpdate);
+        } else if (req.userFound.email !== req.body.userParams.email) {
+          return next(errors.invalidUpdate);
+        } else if (req.userFound.isAdmin === JSON.parse(req.body.userParams.isAdmin)) {
+          return res.status(200).send('There is nothing to change!');
+        } else {
+          req.updateFlag = true;
+          next();
+        }
+      } else {
         return next(errors.invalidUpdate);
-      } else if (req.userFound.lastName !== req.body.userParams.lastName) {
-        return next(errors.invalidUpdate);
-      } else if (req.userFound.email !== req.body.userParams.email) {
-        return next(errors.invalidUpdate);
-      } else if (req.userFound.isAdmin === JSON.parse(req.body.userParams.isAdmin)){
-        return next(errors.nothingToChange);
-      }else{
-        req.updateFlag = true;
-        next();
       }
-    } else {
-      return next(errors.invalidUpdate);
-    }
-  });
-}
+    });
+  }
 };

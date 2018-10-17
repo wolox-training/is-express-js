@@ -7,6 +7,7 @@ const User = require('../models').user,
 
 exports.create = (req, res, next) => {
   const params = req.body.userParams;
+  params.isAdmin = false;
   User.create(params)
     .then(newUser => {
       logger.info(`User with email ${newUser.email} correctly created`);
@@ -57,7 +58,9 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
     req.userFound
       .update(req.body.userParams)
       .then(updatedUser => {
-        logger.info(`User with email ${updatedUser.email} correctly updated. Now isAdmin: ${updatedUser.isAdmin}`);
+        logger.info(
+          `User with email ${updatedUser.email} correctly updated. Now isAdmin: ${updatedUser.isAdmin}`
+        );
         res.status(200).send({ updatedUser });
       })
       .catch(error => {
@@ -68,7 +71,7 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
     const params = req.body.userParams;
     User.create(params)
       .then(newUser => {
-        logger.info(`User with email ${newUser.email} correctly created. Now isAdmin: ${updatedUser.isAdmin}`);
+        logger.info(`User with email ${newUser.email} correctly created. Now isAdmin: ${newUser.isAdmin}`);
         res.status(200).send({ newUser });
       })
       .catch(error => {
@@ -76,4 +79,23 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
         next(error);
       });
   }
+};
+
+exports.createAdminForTest = (req, res, next) => {
+  const adminUser = {
+    firstName: 'admin',
+    lastName: 'istrator',
+    password: '$2a$10$VkavuYbqAZP3unWY1wXP/etsKtlulG4JwhH/hm5AXaCWm1z315Uxe',
+    email: 'admin@wolox.com.ar',
+    isAdmin: true
+  };
+  User.create(adminUser)
+    .then(newUser => {
+      logger.info(`User with email ${newUser.email} correctly created. Now isAdmin: ${newUser.isAdmin}`);
+      res.status(200).send({ newUser });
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    });
 };

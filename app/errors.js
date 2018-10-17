@@ -62,8 +62,3 @@ exports.invalidUserTryingToBeAdmin = {
   statusCode: 400,
   message: 'You are not suppose to be an Admin'
 };
-
-exports.nothingToChange = {
-  statusCode: 400,
-  message: 'There is nothing to change'
-};

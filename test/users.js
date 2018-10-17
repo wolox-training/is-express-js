@@ -4,6 +4,13 @@ const chai = require('chai'),
   should = chai.should();
 
 const userList = {
+    adminUser: {
+      firstName: 'admin',
+      lastName: 'istrator',
+      email: 'admin@wolox.com.ar',
+      password: 'admin123',
+      isAdmin: 'true'
+    },
     userOne: {
       firstName: 'ignacio',
       lastName: 'sosa',
@@ -26,10 +33,21 @@ const userList = {
   invalidInput = {
     invalidPassword: {
       withSymbolsCase: '123456789$',
-      shortLengthCase: '123456'
+      shortLengthCase: '123456',
+      wrongPassCase: '12345678'
     },
     invalidEmail: {
       wrongDomainCase: 'example@gmail.com'
+    },
+    invalidFirstName: 'carlos',
+    invalidLastName: 'juarez'
+  },
+  flag = {
+    is: {
+      admin: true,
+      not: {
+        admin: false
+      }
     }
   };
 
@@ -39,10 +57,18 @@ const successfulLogin = u => {
       .post('/users/sessions')
       .send(u);
   },
-  successfulCreate = u => {
+  successfulCreate = (u, adminFlag = false) => {
+    u.isAdmin = adminFlag;
     return chai
       .request(server)
       .post('/users')
+      .send(u);
+  },
+  successfulAdminCreate = (u, adminFlag) => {
+    u.isAdmin = adminFlag;
+    return chai
+      .request(server)
+      .post('/admin/users')
       .send(u);
   },
   wrongUserBecauseOf = reasons => {
@@ -51,30 +77,25 @@ const successfulLogin = u => {
       wrongUser.password = invalidInput.invalidPassword.withSymbolsCase;
     } else if (reasons === invalidInput.invalidPassword.shortLengthCase) {
       wrongUser.password = invalidInput.invalidPassword.shortLengthCase;
+    } else if (reasons === invalidInput.invalidPassword.wrongPassCase) {
+      wrongUser.password = invalidInput.invalidPassword.wrongPassCase;
     } else if (reasons === invalidInput.invalidEmail.wrongDomainCase) {
       wrongUser.email = invalidInput.invalidEmail.wrongDomainCase;
+    } else if (reasons === invalidInput.invalidFirstName) {
+      wrongUser.firstName = invalidInput.invalidFirstName;
+    } else if (reasons === invalidInput.invalidLastName) {
+      wrongUser.lastName = invalidInput.invalidLastName;
     }
     return wrongUser;
+  },
+  createAdministrator = () => {
+    return chai
+      .request(server)
+      .post('/admin/users/test')
+      .send();
   };
 
 describe('users', () => {
-  describe('/admin/users POST', () => {
-    it('should create new user with isAdmin = true', done => {});
-    it('should create new user with isAdmin = false', done => {});
-    it('should create new user with isAdmin = undefined => true', done => {});
-    it('should not create user because of invalid password - short case', done => {});
-    it('should not create user because of invalid password - invalid char case', done => {});
-    it('should not create user because of invalid email', done => {});
-    it('should update user with isAdmin = true', done => {});
-    it('should update user with isAdmin = false', done => {});
-    it('should not update user because of wrong password', done => {});
-    it('should not update user because of wrong first name', done => {});
-    it('should not update user because of wrong last name', done => {});
-    it('should not update user because there is nothing to change', done => {});
-    it('should fail because there is no user logged-in', done => {});
-    it('should fail because not same token', done => {});
-    it('should fail because the user is not Admin', done => {});
-  });
   describe('/users GET', () => {
     it('should print all the users', done => {
       successfulCreate(userList.userOne).then(userTwo => {
@@ -204,6 +225,231 @@ describe('users', () => {
       successfulLogin(wrongUserBecauseOf(invalidInput.invalidPassword.shortLengthCase)).catch(err => {
         err.should.have.status(400);
         done();
+      });
+    });
+  });
+  describe('/admin/users POST', () => {
+    it('should create new user with isAdmin = true', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.admin)
+            .set('authorization', ress.body.token)
+            .then(resolve => {
+              resolve.should.have.status(200);
+              resolve.should.be.json;
+              dictum.chai(resolve);
+              done();
+            });
+        });
+      });
+    });
+    it('should create new user with isAdmin = false', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', ress.body.token)
+            .then(resolve => {
+              resolve.should.have.status(200);
+              resolve.should.be.json;
+              dictum.chai(resolve);
+              done();
+            });
+        });
+      });
+    });
+    it('should create new user with isAdmin = undefined => true', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne)
+            .set('authorization', ress.body.token)
+            .then(resolve => {
+              resolve.should.have.status(200);
+              resolve.should.be.json;
+              dictum.chai(resolve);
+              done();
+            });
+        });
+      });
+    });
+    it('should not create user because of invalid password - short case', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(
+            wrongUserBecauseOf(invalidInput.invalidPassword.shortLengthCase),
+            flag.is.admin
+          )
+            .set('authorization', ress.body.token)
+            .catch(err => {
+              err.should.have.status(400);
+              done();
+            });
+        });
+      });
+    });
+    it('should not create user because of invalid password - invalid char case', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(
+            wrongUserBecauseOf(invalidInput.invalidPassword.withSymbolsCase),
+            flag.is.admin
+          )
+            .set('authorization', ress.body.token)
+            .catch(err => {
+              err.should.have.status(400);
+              done();
+            });
+        });
+      });
+    });
+    it('should not create user because of invalid email', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(wrongUserBecauseOf(invalidInput.invalidEmail.wrongDomainCase), flag.is.admin)
+            .set('authorization', ress.body.token)
+            .catch(err => {
+              err.should.have.status(400);
+              done();
+            });
+        });
+      });
+    });
+    it('should update user with original isAdmin = true', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.admin)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfulAdminCreate(userList.userOne, flag.is.not.admin)
+                .set('authorization', ress.body.token)
+                .then(resolve => {
+                  resolve.should.have.status(200);
+                  resolve.should.be.json;
+                  dictum.chai(resolve);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should update user with original isAdmin = false', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfulAdminCreate(userList.userOne, flag.is.admin)
+                .set('authorization', ress.body.token)
+                .then(resolve => {
+                  resolve.should.have.status(200);
+                  resolve.should.be.json;
+                  dictum.chai(resolve);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should not update user because of wrong password', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfulAdminCreate(
+                wrongUserBecauseOf(invalidInput.invalidPassword.wrongPassCase),
+                flag.is.admin
+              )
+                .set('authorization', ress.body.token)
+                .catch(err => {
+                  err.should.have.status(400);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should not update user because of wrong first name', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfulAdminCreate(wrongUserBecauseOf(invalidInput.invalidFirstName), flag.is.admin)
+                .set('authorization', ress.body.token)
+                .catch(err => {
+                  err.should.have.status(400);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should not update user because of wrong last name', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfulAdminCreate(wrongUserBecauseOf(invalidInput.invalidLastName), flag.is.admin)
+                .set('authorization', ress.body.token)
+                .catch(err => {
+                  err.should.have.status(400);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should not update user because there is nothing to change', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfulAdminCreate(userList.userOne, flag.is.not.admin)
+                .set('authorization', ress.body.token)
+                .then(resolve => {
+                  resolve.should.have.status(200);
+                  resolve.should.have.property('text').equals('There is nothing to change!');
+                  dictum.chai(resolve);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should fail because there is no user logged-in', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.admin).catch(err => {
+            err.should.have.status(400);
+            done();
+          });
+        });
+      });
+    });
+    it('should fail because not same token', done => {
+      createAdministrator().then(res => {
+        successfulLogin(userList.adminUser).then(ress => {
+          successfulAdminCreate(userList.userOne, flag.is.not.admin)
+            .set('authorization', 'Another token')
+            .catch(err => {
+              err.should.have.status(400);
+              done();
+            });
+        });
+      });
+    });
+    it('should fail because the user is not Admin', done => {
+      successfulCreate(userList.userTwo).then(res => {
+        successfulLogin(userList.userTwo).then(ress => {
+          successfulAdminCreate(userList.userOne)
+            .set('authorization', ress.body.token)
+            .catch(err => {
+              err.should.have.status(400);
+              done();
+            });
+        });
       });
     });
   });
