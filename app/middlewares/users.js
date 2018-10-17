@@ -56,3 +56,24 @@ exports.signInValidation = (req, res, next) => {
     }
   });
 };
+
+exports.tokenValidation = (req, res, next) => {
+  const headerToken = req.headers.authorization ? req.headers.authorization : false;
+  if (!headerToken) {
+    next(errors.tokenError);
+  } else {
+    let userEmail = '';
+    try {
+      userEmail = sessionManager.decode(headerToken);
+    } catch (error) {
+      next(errors.invalidToken);
+    }
+    User.findOne({ where: userEmail }).then(u => {
+      if (!u) {
+        next(errors.invalidToken);
+      } else {
+        next();
+      }
+    });
+  }
+};

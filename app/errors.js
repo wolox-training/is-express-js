@@ -27,3 +27,18 @@ exports.loggedUser = {
   statusCode: 400,
   message: 'User already logged'
 };
+
+exports.databaseError = {
+  statusCode: 400,
+  message: 'Database Error'
+};
+
+exports.tokenError = {
+  statusCode: 400,
+  message: 'User not logged'
+};
+
+exports.invalidToken = {
+  statusCode: 400,
+  message: 'Token is not valid'
+};

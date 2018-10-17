@@ -32,3 +32,22 @@ exports.login = (req, res, next) => {
     }
   });
 };
+
+exports.printSomeUser = (req, res, next) => {
+  const limits = 2,
+    props = {},
+    offset = (req.params.page - 1) * limits;
+  logger.info('Attempting to retrieve list of Users');
+  User.getAll(props, limits, offset)
+    .then(users => {
+      if (!users.length) {
+        next(errors.databaseError);
+      } else {
+        res.status(200).send({ users });
+      }
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    });
+};
