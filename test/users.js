@@ -1,9 +1,18 @@
 const chai = require('chai'),
   dictum = require('dictum.js'),
   server = require('./../app'),
-  bcrypt = require('bcryptjs'),
-  User = require('../app/models').user,
+  nock = require('nock'),
   should = chai.should();
+
+const testGetAlbum = () => {
+  return nock('https://jsonplaceholder.typicode.com/albums')
+    .get('/albums')
+    .reply(200, {
+      userId: 1,
+      id: 1,
+      title: 'quidem molestiae enim'
+    });
+};
 
 const userList = {
     adminUser: {
@@ -407,6 +416,25 @@ describe('users', () => {
             .set('authorization', ress.body.token)
             .catch(err => {
               err.should.have.status(400);
+              done();
+            });
+        });
+      });
+    });
+  });
+  describe('/albums GET', () => {
+    it('should print all the albums', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          chai;
+          testGetAlbum()
+            .request(server)
+            .get('/albums')
+            .set('authorization', ress.body.token)
+            .then(resp => {
+              resp.should.have.status(200);
+              resp.should.be.json;
+              dictum.chai(resp);
               done();
             });
         });
