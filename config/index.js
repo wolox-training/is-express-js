@@ -52,6 +52,9 @@ const config = {
     paging: {
       limit: 5,
       offset: 0
+    },
+    password: {
+      adminPass: 'admin123'
     }
   }
 };

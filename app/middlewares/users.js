@@ -5,7 +5,7 @@ const logger = require('../logger'),
   bcrypt = require('bcryptjs');
 
 exports.signUpValidation = (req, res, next) => {
-  let flagAdmin = false;
+  let flagAdmin;
   if (typeof req.user !== 'undefined') {
     if (req.user.isAdmin) {
       flagAdmin = req.user.isAdmin;

@@ -1,5 +1,21 @@
 'use strict';
 
+const bcrypt = require('bcryptjs'),
+  config = require('../config'),
+  pw = config.password;
+
+const hashPassword = pass => {
+  const saltRounds = 10;
+  bcrypt
+    .hash(pass, saltRounds)
+    .then(hashPass => {
+      return hashPass;
+    })
+    .catch(err => {
+      throw err;
+    });
+};
+
 module.exports = {
   up: (queryInterface, Sequelize) => {
     return queryInterface.bulkInsert(
@@ -9,7 +25,7 @@ module.exports = {
           first_name: 'admin',
           last_name: 'istrator',
           email: 'admin@wolox.com.ar',
-          password: '$2a$10$VkavuYbqAZP3unWY1wXP/etsKtlulG4JwhH/hm5AXaCWm1z315Uxe',
+          password: hashPassword(pw.adminPass),
           is_admin: true
         }
       ],
