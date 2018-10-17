@@ -3,6 +3,7 @@
 const User = require('../models').user,
   errors = require('../errors'),
   bcrypt = require('bcryptjs'),
+  fetch = require('node-fetch'),
   logger = require('../logger');
 
 exports.create = (req, res, next) => {
@@ -93,6 +94,19 @@ exports.createAdminForTest = (req, res, next) => {
     .then(newUser => {
       logger.info(`User with email ${newUser.email} correctly created. Now isAdmin: ${newUser.isAdmin}`);
       res.status(200).send({ newUser });
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    });
+};
+
+exports.printAllAlbums = (req, res, next) => {
+  fetch('https://jsonplaceholder.typicode.com/albums')
+    .then(response => response.json())
+    .then(albums => {
+      logger.info(`Attempting to retrieve list of albums`);
+      res.status(200).send({ albums });
     })
     .catch(error => {
       logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
