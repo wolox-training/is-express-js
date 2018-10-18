@@ -1,47 +1,43 @@
-<html><head><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" /><script src="https://code.jquery.com/jquery-1.12.2.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><style> pre { width: 95%; } </style></head><body><div class="container"><div class="jumbotron"><h1>Users</h1></div><div class="panel panel-default"><div class="panel-heading" role="tab" id="heading-users-POST"><h4 class="panel-title"><a role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true" aria-controls="collapse-users-POST" href="#collapse-users-POST">POST /users</a></h4></div><div id="collapse-users-POST" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-users-POST"><div class="panel-body"><h4>Request Data</h4><div class="container"><h5>Headers</h5><pre>{
-  "content-type": "application/json",
-  "content-length": 102
-}</pre><h5>Body</h5><pre>{
-  "firstName": "maria",
-  "lastName": "delacamara",
-  "email": "maria.dela@wolox.com.ar",
-  "password": "123456789"
+<html><head><link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" /><script src="https://code.jquery.com/jquery-1.12.2.min.js"></script><script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script><style> pre { width: 95%; } </style></head><body><div class="container"><div class="jumbotron"><h1>Users</h1></div><div class="panel panel-default"><div class="panel-heading" role="tab" id="heading-users-2-GET"><h4 class="panel-title"><a role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true" aria-controls="collapse-users-2-GET" href="#collapse-users-2-GET">GET /users/2</a></h4></div><div id="collapse-users-2-GET" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-users-2-GET"><div class="panel-body"><h4>Request Data</h4><div class="container"><h5>Headers</h5><pre>{
+  "authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im5hY2hvLnNvc2FAd29sb3guY29tLmFyIn0.crCMd6DxRkMOvlVPU-7eV-CtO0mWdqIvg6DQLymFvHY"
 }</pre></div></div><div class="panel-body"><h4>Response Data</h4><div class="container"><h5>Status: 200</h5><h5>Headers</h5><pre>{
-  "content-type": "application/json",
-  "content-length": 102
+  "authorization": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im5hY2hvLnNvc2FAd29sb3guY29tLmFyIn0.crCMd6DxRkMOvlVPU-7eV-CtO0mWdqIvg6DQLymFvHY"
 }</pre><h5>Body</h5><pre>{
-  "newUser": {
-    "id": 3,
-    "firstName": "maria",
-    "lastName": "delacamara",
-    "password": "$2a$10$FmeX4JIok3gfHJXl3MgAPOMz1xH9v2QN6Gwz/0ypqbgYD32NWUtfq",
-    "email": "maria.dela@wolox.com.ar",
-    "updated_at": "2018-10-12T17:52:11.907Z",
-    "created_at": "2018-10-12T17:52:11.907Z",
-    "deleted_at": null,
-    "is_admin": null
-  }
+  "users": [
+    {
+      "id": 3,
+      "firstName": "dante",
+      "lastName": "farias",
+      "email": "dante.farias@wolox.com.ar",
+      "password": "$2a$10$a.AmQIrRTdvLoLBPu8ujXOr0gTc7hq2QyFARkXR8Pbud7BybhKzpC",
+      "isAdmin": false,
+      "created_at": "2018-10-17T19:09:03.534Z",
+      "updated_at": "2018-10-17T19:09:03.534Z",
+      "deleted_at": null
+    }
+  ]
 }</pre></div></div></div></div><div class="panel panel-default"><div class="panel-heading" role="tab" id="heading-users-POST"><h4 class="panel-title"><a role="button" data-toggle="collapse" data-parent="#accordion" aria-expanded="true" aria-controls="collapse-users-POST" href="#collapse-users-POST">POST /users</a></h4></div><div id="collapse-users-POST" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-users-POST"><div class="panel-body"><h4>Request Data</h4><div class="container"><h5>Headers</h5><pre>{
   "content-type": "application/json",
-  "content-length": 98
+  "content-length": 114
 }</pre><h5>Body</h5><pre>{
   "firstName": "ignacio",
   "lastName": "sosa",
   "email": "nacho.sosa@wolox.com.ar",
-  "password": "123456789"
+  "password": "123456789",
+  "isAdmin": false
 }</pre></div></div><div class="panel-body"><h4>Response Data</h4><div class="container"><h5>Status: 200</h5><h5>Headers</h5><pre>{
   "content-type": "application/json",
-  "content-length": 98
+  "content-length": 114
 }</pre><h5>Body</h5><pre>{
   "newUser": {
-    "id": 1,
+    "id": 2,
     "firstName": "ignacio",
     "lastName": "sosa",
-    "password": "$2a$10$hZVgXe1/96PmvGKbO8jJOeaK/Lqk7svLCtkz3eD2s6oVTsIRPAQNS",
+    "password": "$2a$10$BEe5tLG3EAonY1cp5lzO.uYvv2kTvknmBzj5VrycXItpaIiDgY/Bi",
     "email": "nacho.sosa@wolox.com.ar",
-    "updated_at": "2018-10-12T17:52:12.873Z",
-    "created_at": "2018-10-12T17:52:12.873Z",
-    "deleted_at": null,
-    "is_admin": null
+    "isAdmin": false,
+    "updated_at": "2018-10-17T19:09:04.760Z",
+    "created_at": "2018-10-17T19:09:04.760Z",
+    "deleted_at": null
   }
 }</pre></div></div></div></div></div></body></html>
