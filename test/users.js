@@ -51,11 +51,13 @@ const userList = {
       }
     }
   },
-  listOfAlbums = [ {
-    userId: 1,
-    id: 1,
-    title: 'quidem molestiae enim',
-  } ];
+  listOfAlbums = [
+    {
+      userId: 1,
+      id: 1,
+      title: 'quidem molestiae enim'
+    }
+  ];
 
 const successfulLogin = u => {
     return chai
