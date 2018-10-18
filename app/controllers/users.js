@@ -3,6 +3,7 @@
 const User = require('../models').user,
   errors = require('../errors'),
   bcrypt = require('bcryptjs'),
+  fetch = require('node-fetch'),
   logger = require('../logger');
 
 exports.create = (req, res, next) => {
@@ -81,18 +82,12 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
   }
 };
 
-exports.createAdminForTest = (req, res, next) => {
-  const adminUser = {
-    firstName: 'admin',
-    lastName: 'istrator',
-    password: '$2a$10$VkavuYbqAZP3unWY1wXP/etsKtlulG4JwhH/hm5AXaCWm1z315Uxe',
-    email: 'admin@wolox.com.ar',
-    isAdmin: true
-  };
-  User.create(adminUser)
-    .then(newUser => {
-      logger.info(`User with email ${newUser.email} correctly created. Now isAdmin: ${newUser.isAdmin}`);
-      res.status(200).send({ newUser });
+exports.printAllAlbums = (req, res, next) => {
+  logger.info(`Attempting to retrieve list of albums.`);
+  fetch('https://jsonplaceholder.typicode.com/albums')
+    .then(response => response.json())
+    .then(albums => {
+      res.status(200).send({ albums });
     })
     .catch(error => {
       logger.error(`Database Error. Details: ${JSON.stringify(error)}`);

@@ -1,8 +1,7 @@
 const chai = require('chai'),
   dictum = require('dictum.js'),
   server = require('./../app'),
-  bcrypt = require('bcryptjs'),
-  User = require('../app/models').user,
+  nock = require('nock'),
   should = chai.should();
 
 const userList = {
@@ -51,7 +50,12 @@ const userList = {
         admin: false
       }
     }
-  };
+  },
+  listOfAlbums = [ {
+    userId: 1,
+    id: 1,
+    title: 'quidem molestiae enim',
+  } ];
 
 const successfulLogin = u => {
     return chai
@@ -407,6 +411,44 @@ describe('users', () => {
             .set('authorization', ress.body.token)
             .catch(err => {
               err.should.have.status(400);
+              done();
+            });
+        });
+      });
+    });
+  });
+  describe.only('/albums GET', () => {
+    beforeEach(done => {
+      const testGetAlbum = nock('https://jsonplaceholder.typicode.com')
+        .get('/albums')
+        .reply(200, listOfAlbums);
+      done();
+    });
+    it('should print all the albums', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          chai
+            .request(server)
+            .get('/albums')
+            .set('authorization', ress.body.token)
+            .then(resp => {
+              resp.should.have.status(200);
+              resp.should.be.json;
+              resp.body.albums.length.should.equals(listOfAlbums.length);
+              dictum.chai(resp);
+              done();
+            });
+        });
+      });
+    });
+    it('should not print because no user logged', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          chai
+            .request(server)
+            .get('/albums')
+            .catch(resp => {
+              resp.should.have.status(400);
               done();
             });
         });

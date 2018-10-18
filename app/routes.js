@@ -3,6 +3,7 @@ const uCtrl = require('./controllers/users'),
 
 exports.init = app => {
   app.get('/users/:page', [uMW.tokenValidation], uCtrl.printSomeUser);
+  app.get('/albums', [uMW.tokenValidation], uCtrl.printAllAlbums);
   app.post('/users', [uMW.signUpValidation], uCtrl.create);
   app.post('/users/sessions', [uMW.signInValidation], uCtrl.login);
   app.post(
@@ -10,5 +11,4 @@ exports.init = app => {
     [uMW.tokenValidation, uMW.adminValidation, uMW.signUpValidation, uMW.updateValidation],
     uCtrl.createOrUpdateAdminUser
   );
-  app.post('/admin/users/test', [], uCtrl.createAdminForTest);
 };
