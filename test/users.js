@@ -50,7 +50,12 @@ const userList = {
         admin: false
       }
     }
-  };
+  },
+  listOfAlbums = [ {
+    userId: 1,
+    id: 1,
+    title: 'quidem molestiae enim',
+  } ];
 
 const successfulLogin = u => {
     return chai
@@ -412,15 +417,11 @@ describe('users', () => {
       });
     });
   });
-  describe('/albums GET', () => {
+  describe.only('/albums GET', () => {
     beforeEach(done => {
       const testGetAlbum = nock('https://jsonplaceholder.typicode.com')
         .get('/albums')
-        .reply(200, {
-          userId: 1,
-          id: 1,
-          title: 'quidem molestiae enim'
-        });
+        .reply(200, listOfAlbums);
       done();
     });
     it('should print all the albums', done => {
@@ -433,6 +434,7 @@ describe('users', () => {
             .then(resp => {
               resp.should.have.status(200);
               resp.should.be.json;
+              resp.body.albums.length.should.equals(listOfAlbums.length);
               dictum.chai(resp);
               done();
             });
