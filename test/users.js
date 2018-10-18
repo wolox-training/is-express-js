@@ -412,8 +412,8 @@ describe('users', () => {
       });
     });
   });
-  describe.only('/albums GET', () => {
-    before(function() {
+  describe('/albums GET', () => {
+    beforeEach(done => {
       const testGetAlbum = nock('https://jsonplaceholder.typicode.com')
         .get('/albums')
         .reply(200, {
@@ -421,6 +421,7 @@ describe('users', () => {
           id: 1,
           title: 'quidem molestiae enim'
         });
+      done();
     });
     it('should print all the albums', done => {
       successfulCreate(userList.userOne).then(res => {

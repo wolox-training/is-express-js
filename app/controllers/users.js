@@ -86,7 +86,7 @@ exports.printAllAlbums = (req, res, next) => {
   fetch('https://jsonplaceholder.typicode.com/albums')
     .then(response => response.json())
     .then(albums => {
-      logger.info(`Attempting to retrieve list of albums`);
+      logger.info(`Attempting to retrieve list of albums.`);
       res.status(200).send({ albums });
     })
     .catch(error => {
