@@ -4,15 +4,13 @@ const chai = require('chai'),
   nock = require('nock'),
   should = chai.should();
 
-const testGetAlbum = () => {
-  return nock('https://jsonplaceholder.typicode.com/albums')
-    .get('/albums')
-    .reply(200, {
-      userId: 1,
-      id: 1,
-      title: 'quidem molestiae enim'
-    });
-};
+const testGetAlbum = nock('https://jsonplaceholder.typicode.com/albums')
+  .get('/albums')
+  .reply(200, {
+    userId: 1,
+    id: 1,
+    title: 'quidem molestiae enim'
+  });
 
 const userList = {
     adminUser: {
@@ -423,13 +421,12 @@ describe('users', () => {
     });
   });
   describe('/albums GET', () => {
-    it('should print all the albums', done => {
+    it.only('should print all the albums', done => {
       successfulCreate(userList.userOne).then(res => {
         successfulLogin(userList.userOne).then(ress => {
-          chai;
-          testGetAlbum()
+          chai
             .request(server)
-            .get('/albums')
+            .testGetAlbum()
             .set('authorization', ress.body.token)
             .then(resp => {
               resp.should.have.status(200);
