@@ -11,5 +11,4 @@ exports.init = app => {
     [uMW.tokenValidation, uMW.adminValidation, uMW.signUpValidation, uMW.updateValidation],
     uCtrl.createOrUpdateAdminUser
   );
-  app.post('/admin/users/test', [], uCtrl.createAdminForTest);
 };

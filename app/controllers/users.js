@@ -82,25 +82,6 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
   }
 };
 
-exports.createAdminForTest = (req, res, next) => {
-  const adminUser = {
-    firstName: 'admin',
-    lastName: 'istrator',
-    password: '$2a$10$VkavuYbqAZP3unWY1wXP/etsKtlulG4JwhH/hm5AXaCWm1z315Uxe',
-    email: 'admin@wolox.com.ar',
-    isAdmin: true
-  };
-  User.create(adminUser)
-    .then(newUser => {
-      logger.info(`User with email ${newUser.email} correctly created. Now isAdmin: ${newUser.isAdmin}`);
-      res.status(200).send({ newUser });
-    })
-    .catch(error => {
-      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
-      next(error);
-    });
-};
-
 exports.printAllAlbums = (req, res, next) => {
   fetch('https://jsonplaceholder.typicode.com/albums')
     .then(response => response.json())
