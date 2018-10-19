@@ -1,6 +1,5 @@
 const Album = require('../models').album,
   errors = require('../errors'),
-  bcrypt = require('bcryptjs'),
   fetch = require('node-fetch'),
   logger = require('../logger');
 
@@ -10,13 +9,28 @@ exports.retrieveAlbum = (req, res, next) => {
   fetch(`https://jsonplaceholder.typicode.com/albums/${albumId}`)
     .then(response => response.json())
     .then(someAlbum => {
-      req.albumData = {
-        id: someAlbum.id,
-        title: someAlbum.title
-      };
-      next();
+      if (!someAlbum.id) {
+        return next(errors.nothingFound);
+      } else {
+        req.albumData = someAlbum;
+        next();
+      }
     })
     .catch(error => {
-      return next(errors.nothingFound);
+      return errors.defaultError;
     });
+};
+
+exports.uniqueAlbumBoughtValidation = (req, res, next) => {
+  const userAlreadyBoughtOne = {
+    userId: req.user.id,
+    albumId: req.albumData.id
+  };
+  Album.findOne({ where: userAlreadyBoughtOne }).then(someAlbum => {
+    if (!someAlbum) {
+      next();
+    } else {
+      return next(errors.alreadyBought);
+    }
+  });
 };

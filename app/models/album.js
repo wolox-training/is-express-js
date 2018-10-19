@@ -32,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
   };
   album.assignUser = relation => {
     return album.create(relation).catch(err => {
-      throw errors.defaultError;
+      throw errors.databaseError;
     });
   };
   return album;

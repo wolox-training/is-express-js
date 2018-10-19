@@ -13,5 +13,9 @@ exports.init = app => {
     uCtrl.createOrUpdateAdminUser
   );
   app.get('/albums', [uMW.tokenValidation], albumCtrl.printAllAlbums);
-  app.post('/albums/:id', [uMW.tokenValidation, albumMW.retrieveAlbum], albumCtrl.userBuyAlbum);
+  app.post(
+    '/albums/:id',
+    [uMW.tokenValidation, albumMW.retrieveAlbum, albumMW.uniqueAlbumBoughtValidation],
+    albumCtrl.userBuyAlbum
+  );
 };

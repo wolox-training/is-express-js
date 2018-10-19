@@ -1,6 +1,5 @@
 const Album = require('../models').album,
   errors = require('../errors'),
-  bcrypt = require('bcryptjs'),
   fetch = require('node-fetch'),
   logger = require('../logger');
 
@@ -17,7 +16,7 @@ exports.printAllAlbums = (req, res, next) => {
     });
 };
 
-exports.userBuyAlbum = ( req, res, next ) => {
+exports.userBuyAlbum = (req, res, next) => {
   const relation = {
     userId: req.user.id,
     albumId: req.albumData.id,

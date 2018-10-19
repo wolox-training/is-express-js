@@ -81,17 +81,3 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
       });
   }
 };
-/*
-exports.printAllAlbums = (req, res, next) => {
-  logger.info(`Attempting to retrieve list of albums.`);
-  fetch('https://jsonplaceholder.typicode.com/albums')
-    .then(response => response.json())
-    .then(albums => {
-      res.status(200).send({ albums });
-    })
-    .catch(error => {
-      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
-      next(error);
-    });
-};
-*/
