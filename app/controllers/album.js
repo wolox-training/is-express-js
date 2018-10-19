@@ -4,25 +4,29 @@ const Album = require('../models').album,
   fetch = require('node-fetch'),
   logger = require('../logger');
 
-exports.userBuyAlbum = (req, res, next) => {
-  /* const albumId = req.params.id,
-    userId = req.user.id; */
-  const albumId = req.params.id;
-  logger.info(`Attempting to buy Album.`);
-  fetch(`https://jsonplaceholder.typicode.com/albums/${albumId}`)
+exports.printAllAlbums = (req, res, next) => {
+  logger.info(`Attempting to retrieve list of albums.`);
+  fetch('https://jsonplaceholder.typicode.com/albums')
     .then(response => response.json())
-    .then(albumToBuy => {
-      // res.status(200).send({ albumToBuy });
-      const relation = {
-        userId: req.user.id,
-        albumId: albumToBuy.id
-      };
-      Album.create(relation).then(newRelation => {
-        logger.info(
-          `Relation userID: ${newRelation.userId} - albumID: ${newRelation.albumId} correctly created`
-        );
-        res.status(200).send({ newRelation });
-      });
+    .then(albums => {
+      res.status(200).send({ albums });
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    });
+};
+
+exports.userBuyAlbum = ( req, res, next ) => {
+  const relation = {
+    userId: req.user.id,
+    albumId: req.albumData.id,
+    albumTitle: req.albumData.title
+  };
+  Album.assignUser(relation)
+    .then(newRelation => {
+      logger.info(`Relation correctly created`);
+      res.status(200).send({ newRelation });
     })
     .catch(error => {
       logger.error(`Database Error. Details: ${JSON.stringify(error)}`);

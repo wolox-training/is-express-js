@@ -62,3 +62,13 @@ exports.invalidUserTryingToBeAdmin = {
   statusCode: 400,
   message: 'You are not suppose to be an Admin'
 };
+
+exports.nothingFound = {
+  statusCode: 404,
+  message: 'There is no information'
+};
+
+exports.alreadyBought = {
+  statusCode: 400,
+  message: 'You have already bought this album!'
+};

@@ -81,7 +81,7 @@ exports.createOrUpdateAdminUser = (req, res, next) => {
       });
   }
 };
-
+/*
 exports.printAllAlbums = (req, res, next) => {
   logger.info(`Attempting to retrieve list of albums.`);
   fetch('https://jsonplaceholder.typicode.com/albums')
@@ -94,3 +94,4 @@ exports.printAllAlbums = (req, res, next) => {
       next(error);
     });
 };
+*/

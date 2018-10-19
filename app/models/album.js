@@ -6,13 +6,20 @@ module.exports = (sequelize, DataTypes) => {
     {
       userId: {
         type: DataTypes.INTEGER,
+        primaryKey: true,
         allowNull: false,
         field: 'user_id'
       },
       albumId: {
         type: DataTypes.INTEGER,
+        primaryKey: true,
         allowNull: false,
-        field: 'album_id'
+        field: 'id'
+      },
+      albumTitle: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        field: 'album_title'
       }
     },
     {
@@ -23,13 +30,9 @@ module.exports = (sequelize, DataTypes) => {
   album.associate = models => {
     album.belongsTo(models.user);
   };
-  album.assignUser = (userID, albumID) => {
-    const relation = {
-      userId: userID,
-      albumId: albumID
-    };
+  album.assignUser = relation => {
     return album.create(relation).catch(err => {
-      errors.defaultError;
+      throw errors.defaultError;
     });
   };
   return album;

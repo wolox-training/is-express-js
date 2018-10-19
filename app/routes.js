@@ -1,6 +1,7 @@
 const uCtrl = require('./controllers/users'),
   uMW = require('./middlewares/users'),
-  albumCtrl = require('./controllers/album');
+  albumCtrl = require('./controllers/album'),
+  albumMW = require('./middlewares/album');
 
 exports.init = app => {
   app.get('/users/:page', [uMW.tokenValidation], uCtrl.printSomeUser);
@@ -11,6 +12,6 @@ exports.init = app => {
     [uMW.tokenValidation, uMW.adminValidation, uMW.signUpValidation, uMW.updateValidation],
     uCtrl.createOrUpdateAdminUser
   );
-  app.get('/albums', [uMW.tokenValidation], uCtrl.printAllAlbums);
-  app.post('/albums/:id', [uMW.tokenValidation], albumCtrl.userBuyAlbum);
+  app.get('/albums', [uMW.tokenValidation], albumCtrl.printAllAlbums);
+  app.post('/albums/:id', [uMW.tokenValidation, albumMW.retrieveAlbum], albumCtrl.userBuyAlbum);
 };
