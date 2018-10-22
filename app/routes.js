@@ -13,6 +13,11 @@ exports.init = app => {
     uCtrl.createOrUpdateAdminUser
   );
   app.get('/albums', [uMW.tokenValidation], albumCtrl.printAllAlbums);
+  app.get(
+    '/users/:user_id/albums',
+    [uMW.tokenValidation, albumMW.retrieveUserAlbums],
+    albumCtrl.printAllUserAlbums
+  );
   app.post(
     '/albums/:id',
     [uMW.tokenValidation, albumMW.retrieveAlbum, albumMW.uniqueAlbumBoughtValidation],

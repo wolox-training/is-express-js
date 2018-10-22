@@ -72,3 +72,13 @@ exports.alreadyBought = {
   statusCode: 400,
   message: 'You have already bought this album!'
 };
+
+exports.noUserAlbum = {
+  statusCode: 400,
+  message: 'No user with that ID related to any Album'
+};
+
+exports.invalidUserList = {
+  statusCode: 400,
+  message: 'You can not ask for other users list of albums'
+};

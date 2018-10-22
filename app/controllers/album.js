@@ -32,3 +32,17 @@ exports.userBuyAlbum = (req, res, next) => {
       next(error);
     });
 };
+
+exports.printAllUserAlbums = (req, res, next) => {
+  const listOfUserAlbums = req.list.albumList,
+    userIdToPrint = req.list.userId,
+    isAdminFlag = req.user.isAdmin,
+    userIdAsking = req.user.id;
+  if (isAdminFlag) {
+    res.status(200).send({ listOfUserAlbums });
+  } else if (userIdToPrint !== userIdAsking) {
+    return next(errors.invalidUserList);
+  } else {
+    res.status(200).send({ listOfUserAlbums });
+  }
+};

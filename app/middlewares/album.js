@@ -34,3 +34,23 @@ exports.uniqueAlbumBoughtValidation = (req, res, next) => {
     }
   });
 };
+
+exports.retrieveUserAlbums = (req, res, next) => {
+  const userToFind = { userId: req.params.user_id };
+  Album.getAlbumList(userToFind)
+    .then(list => {
+      if (!list.length) {
+        return next(errors.noUserAlbum);
+      } else {
+        req.list = {
+          albumList: list,
+          userId: parseInt(userToFind.userId)
+        };
+        next();
+      }
+    })
+    .catch(error => {
+      logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+      next(error);
+    });
+};
