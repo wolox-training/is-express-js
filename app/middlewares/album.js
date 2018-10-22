@@ -37,6 +37,7 @@ exports.uniqueAlbumBoughtValidation = (req, res, next) => {
 
 exports.retrieveUserAlbums = (req, res, next) => {
   const userToFind = { userId: req.params.user_id };
+  logger.info(`Attempting to find all Albums of user with id: ${userToFind.userId}.`);
   Album.getAlbumList(userToFind)
     .then(list => {
       if (!list.length) {
