@@ -34,3 +34,20 @@ exports.uniqueAlbumBoughtValidation = (req, res, next) => {
     }
   });
 };
+
+exports.retrieveAlbumPhotos = (req, res, next) => {
+  const albumToFind = parseInt(req.params.id),
+    userToFind = req.user.id;
+  Album.getPhotos(userToFind, albumToFind)
+    .then(albumFound => {
+      if (!albumFound) {
+        return next(errors.invalidUserAlbum);
+      } else {
+        req.albumFound = albumFound;
+        next();
+      }
+    })
+    .catch(error => {
+      return errors.defaultError;
+    });
+};
