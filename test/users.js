@@ -573,4 +573,126 @@ describe('users', () => {
       });
     });
   });
+  describe.only('/users/:user_id/albums GET', () => {
+    it('should get all albums case isAdmin false', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          successfullNock(albumIndex.one);
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              successfullNock(albumIndex.two);
+              successfullRelationCreate(albumIndex.two)
+                .set('authorization', ress.body.token)
+                .then(ressss => {
+                  chai
+                    .request(server)
+                    .get(`/users/${res.body.newUser.id}/albums`)
+                    .set('authorization', ress.body.token)
+                    .then(resp => {
+                      resp.should.have.status(200);
+                      resp.should.be.json;
+                      resp.body.listOfUserAlbums.length.should.equals(2);
+                      dictum.chai(resp);
+                      done();
+                    });
+                });
+            });
+        });
+      });
+    });
+    it('should get all albums case isAdmin true', done => {
+      successfulLogin(userList.adminUser).then(admin => {
+        successfulAdminCreate(userList.userOne, flag.is.admin)
+          .set('authorization', admin.body.token)
+          .then(userOneAdmin => {
+            successfulLogin(userList.userOne).then(userOneAdminLogged => {
+              successfulCreate(userList.userTwo).then(userTwoNotAdmin => {
+                successfulLogin(userList.userTwo).then(userTwoNotAdminLogged => {
+                  successfullNock(albumIndex.one);
+                  successfullRelationCreate(albumIndex.one)
+                    .set('authorization', userTwoNotAdminLogged.body.token)
+                    .then(firstRelation => {
+                      successfullNock(albumIndex.two);
+                      successfullRelationCreate(albumIndex.two)
+                        .set('authorization', userTwoNotAdminLogged.body.token)
+                        .then(secondRelation => {
+                          chai
+                            .request(server)
+                            .get(`/users/${userTwoNotAdmin.body.newUser.id}/albums`)
+                            .set('authorization', userOneAdminLogged.body.token)
+                            .then(resp => {
+                              resp.should.have.status(200);
+                              resp.should.be.json;
+                              resp.body.listOfUserAlbums.length.should.equals(2);
+                              userTwoNotAdmin.body.newUser.id.should.not.equals(userOneAdmin.body.newUser.id);
+                              dictum.chai(resp);
+                              done();
+                            });
+                        });
+                    });
+                });
+              });
+            });
+          });
+      });
+    });
+    it('should fail because different id and not admin', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfulCreate(userList.userTwo).then(userTwoNotAdmin => {
+            successfulLogin(userList.userTwo).then(userTwoNotAdminLogged => {
+              successfullNock(albumIndex.one);
+              successfullRelationCreate(albumIndex.one)
+                .set('authorization', userTwoNotAdminLogged.body.token)
+                .then(firstRelation => {
+                  successfullNock(albumIndex.two);
+                  successfullRelationCreate(albumIndex.two)
+                    .set('authorization', userTwoNotAdminLogged.body.token)
+                    .then(secondRelation => {
+                      chai
+                        .request(server)
+                        .get(`/users/${userTwoNotAdmin.body.newUser.id}/albums`)
+                        .set('authorization', userOneNotAdminLogged.body.token)
+                        .catch(err => {
+                          err.should.have.status(400);
+                          userTwoNotAdmin.body.newUser.id.should.not.equals(userOneNotAdmin.body.newUser.id);
+                          done();
+                        });
+                    });
+                });
+            });
+          });
+        });
+      });
+    });
+    it('should fail because userid is not in relation table', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfulCreate(userList.userTwo).then(userTwoNotAdmin => {
+            successfulLogin(userList.userTwo).then(userTwoNotAdminLogged => {
+              successfullNock(albumIndex.one);
+              successfullRelationCreate(albumIndex.one)
+                .set('authorization', userTwoNotAdminLogged.body.token)
+                .then(firstRelation => {
+                  successfullNock(albumIndex.two);
+                  successfullRelationCreate(albumIndex.two)
+                    .set('authorization', userTwoNotAdminLogged.body.token)
+                    .then(secondRelation => {
+                      chai
+                        .request(server)
+                        .get(`/users/${userOneNotAdmin.body.newUser.id}/albums`)
+                        .set('authorization', userOneNotAdminLogged.body.token)
+                        .catch(err => {
+                          err.should.have.status(400);
+                          done();
+                        });
+                    });
+                });
+            });
+          });
+        });
+      });
+    });
+  });
 });
