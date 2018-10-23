@@ -51,11 +51,30 @@ const userList = {
       }
     }
   },
-  listOfAlbums = [ {
-    userId: 1,
-    id: 1,
-    title: 'quidem molestiae enim',
-  } ];
+  albumObjects = {
+    albumOne: {
+      userId: 1,
+      id: 1,
+      title: 'quidem molestiae enim'
+    },
+    albumTwo: {
+      userId: 1,
+      id: 2,
+      title: 'sunt qui excepturi placeat culpa'
+    },
+    albumThree: {
+      userId: 1,
+      id: 3,
+      title: 'omnis laborum odio'
+    }
+  },
+  albumList = [albumObjects.albumOne, albumObjects.albumTwo, albumObjects.albumThree],
+  albumIndex = {
+    one: 1,
+    two: 2,
+    three: 3,
+    notFound: 4
+  };
 
 const successfulLogin = u => {
     return chai
@@ -76,6 +95,27 @@ const successfulLogin = u => {
       .request(server)
       .post('/admin/users')
       .send(u);
+  },
+  successfullRelationCreate = albumPage => {
+    return chai.request(server).post(`/albums/${albumPage}`);
+  },
+  successfullGetAllAlbums = () => {
+    return chai.request(server).get('/albums');
+  },
+  successfullNock = (albumPage = null) => {
+    if (!albumPage) {
+      const testGetAlbums = nock('https://jsonplaceholder.typicode.com')
+        .get('/albums')
+        .reply(200, albumList);
+    } else if (albumPage === albumIndex.notFound) {
+      const testNoneAlbum = nock('https://jsonplaceholder.typicode.com/albums')
+        .get(`/${albumPage}`)
+        .reply(200, {});
+    } else {
+      const testOneAlbum = nock('https://jsonplaceholder.typicode.com/albums')
+        .get(`/${albumPage}`)
+        .reply(200, albumList[albumPage]);
+    }
   },
   wrongUserBecauseOf = reasons => {
     const wrongUser = Object.assign({}, userList.userOne);
@@ -417,24 +457,20 @@ describe('users', () => {
       });
     });
   });
-  describe.only('/albums GET', () => {
+  describe('/albums GET', () => {
     beforeEach(done => {
-      const testGetAlbum = nock('https://jsonplaceholder.typicode.com')
-        .get('/albums')
-        .reply(200, listOfAlbums);
+      successfullNock();
       done();
     });
     it('should print all the albums', done => {
       successfulCreate(userList.userOne).then(res => {
         successfulLogin(userList.userOne).then(ress => {
-          chai
-            .request(server)
-            .get('/albums')
+          successfullGetAllAlbums()
             .set('authorization', ress.body.token)
             .then(resp => {
               resp.should.have.status(200);
               resp.should.be.json;
-              resp.body.albums.length.should.equals(listOfAlbums.length);
+              resp.body.albums.length.should.equals(albumList.length);
               dictum.chai(resp);
               done();
             });
@@ -444,11 +480,93 @@ describe('users', () => {
     it('should not print because no user logged', done => {
       successfulCreate(userList.userOne).then(res => {
         successfulLogin(userList.userOne).then(ress => {
-          chai
-            .request(server)
-            .get('/albums')
-            .catch(resp => {
-              resp.should.have.status(400);
+          successfullGetAllAlbums().catch(resp => {
+            resp.should.have.status(400);
+            done();
+          });
+        });
+      });
+    });
+  });
+  describe('/albums/:id POST', () => {
+    beforeEach(done => {
+      successfullNock(albumIndex.one);
+      done();
+    });
+    it('should create a relation of user-album', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', ress.body.token)
+            .then(resp => {
+              resp.should.have.status(200);
+              resp.should.be.json;
+              resp.body.newRelation.userId.should.equals(res.body.newUser.id);
+              dictum.chai(resp);
+              done();
+            });
+        });
+      });
+    });
+    it('should create two relations of user-album', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              resss.should.have.status(200);
+              resss.body.newRelation.userId.should.equals(res.body.newUser.id);
+              successfullNock(albumIndex.two);
+              successfullRelationCreate(albumIndex.two)
+                .set('authorization', ress.body.token)
+                .then(resp => {
+                  resp.should.have.status(200);
+                  resp.should.be.json;
+                  resp.body.newRelation.userId.should.equals(res.body.newUser.id);
+                  dictum.chai(resp);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should fail because user already bougth that album', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', ress.body.token)
+            .then(resss => {
+              resss.should.have.status(200);
+              resss.body.newRelation.userId.should.equals(res.body.newUser.id);
+              successfullNock(albumIndex.one);
+              successfullRelationCreate(albumIndex.one)
+                .set('authorization', ress.body.token)
+                .catch(err => {
+                  err.should.have.status(400);
+                  done();
+                });
+            });
+        });
+      });
+    });
+    it('should fail because user not logged', done => {
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          successfullRelationCreate(albumIndex.one).catch(err => {
+            err.should.have.status(400);
+            done();
+          });
+        });
+      });
+    });
+    it('should fail because the albumId does not exist', done => {
+      successfullNock(albumIndex.notFound);
+      successfulCreate(userList.userOne).then(res => {
+        successfulLogin(userList.userOne).then(ress => {
+          successfullRelationCreate(albumIndex.notFound)
+            .set('authorization', ress.body.token)
+            .catch(err => {
+              err.should.have.status(404);
               done();
             });
         });
