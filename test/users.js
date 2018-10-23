@@ -573,7 +573,7 @@ describe('users', () => {
       });
     });
   });
-  describe.only('/users/:user_id/albums GET', () => {
+  describe('/users/:user_id/albums GET', () => {
     it('should get all albums case isAdmin false', done => {
       successfulCreate(userList.userOne).then(res => {
         successfulLogin(userList.userOne).then(ress => {
