@@ -3,7 +3,7 @@ module.exports = {
     return queryInterface.createTable('albums', {
       id: {
         allowNull: false,
-        autoIncrement: true, // a lo sumo cambio esto
+        autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },

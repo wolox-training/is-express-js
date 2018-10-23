@@ -488,7 +488,7 @@ describe('users', () => {
       });
     });
   });
-  describe.only('/albums/:id POST', () => {
+  describe('/albums/:id POST', () => {
     beforeEach(done => {
       successfullNock(albumIndex.one);
       done();
