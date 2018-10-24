@@ -102,7 +102,7 @@ const userList = {
       }
     ]
   },
-  photoList = [{},photoObjects.albumOne, photoObjects.albumTwo],
+  photoList = [{}, photoObjects.albumOne, photoObjects.albumTwo],
   photoIndex = {
     one: 1,
     two: 2,
@@ -151,7 +151,7 @@ const successfulLogin = u => {
         .reply(200, albumList[albumPage]);
     }
   },
-  successfullPhotoNock = albumPhoto => {
+  successfullAlbumPhotoNock = albumPhoto => {
     const testGetAlbums = nock('https://jsonplaceholder.typicode.com')
       .get(`/photos?albumId=${albumPhoto}`)
       .reply(200, photoList[albumPhoto]);
@@ -734,7 +734,7 @@ describe('users', () => {
       });
     });
   });
-  describe.only('/users/albums/:id/photos GET', () => {
+  describe('/users/albums/:id/photos GET', () => {
     it('should get all photos of an Album', done => {
       successfulCreate(userList.userOne).then(userOneNotAdmin => {
         successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
@@ -746,7 +746,7 @@ describe('users', () => {
               successfullRelationCreate(albumIndex.two)
                 .set('authorization', userOneNotAdminLogged.body.token)
                 .then(secondRelation => {
-                  successfullPhotoNock(photoIndex.one);
+                  successfullAlbumPhotoNock(photoIndex.one);
                   chai
                     .request(server)
                     .get(`/users/albums/${photoIndex.one}/photos`)
@@ -758,6 +758,89 @@ describe('users', () => {
                       dictum.chai(resp);
                       done();
                     });
+                });
+            });
+        });
+      });
+    });
+    it('should fail because user do not have that album', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulCreate(userList.userTwo).then(usertwoNotAdmin => {
+          successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+            successfulLogin(userList.userTwo).then(usertwoNotAdminLogged => {
+              successfullAlbumNock(albumIndex.one);
+              successfullRelationCreate(albumIndex.one)
+                .set('authorization', userOneNotAdminLogged.body.token)
+                .then(firstRelation => {
+                  successfullAlbumNock(albumIndex.two);
+                  successfullRelationCreate(albumIndex.two)
+                    .set('authorization', userOneNotAdminLogged.body.token)
+                    .then(secondRelation => {
+                      successfullAlbumPhotoNock(photoIndex.one);
+                      chai
+                        .request(server)
+                        .get(`/users/albums/${photoIndex.one}/photos`)
+                        .set('authorization', usertwoNotAdminLogged.body.token)
+                        .catch(err => {
+                          err.should.have.status(400);
+                          done();
+                        });
+                    });
+                });
+            });
+          });
+        });
+      });
+    });
+    it('should fail because admin do not have that album', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.adminUser).then(adminuserLogged => {
+          successfulAdminCreate(userList.userTwo, flag.is.admin)
+            .set('authorization', adminuserLogged.body.token)
+            .then(userTwoAdmin => {
+              successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+                successfulLogin(userList.userTwo).then(usertwoAdminLogged => {
+                  successfullAlbumNock(albumIndex.one);
+                  successfullRelationCreate(albumIndex.one)
+                    .set('authorization', userOneNotAdminLogged.body.token)
+                    .then(firstRelation => {
+                      successfullAlbumNock(albumIndex.two);
+                      successfullRelationCreate(albumIndex.two)
+                        .set('authorization', userOneNotAdminLogged.body.token)
+                        .then(secondRelation => {
+                          successfullAlbumPhotoNock(photoIndex.one);
+                          chai
+                            .request(server)
+                            .get(`/users/albums/${photoIndex.one}/photos`)
+                            .set('authorization', usertwoAdminLogged.body.token)
+                            .catch(err => {
+                              err.should.have.status(400);
+                              userTwoAdmin.body.newUser.isAdmin.should.be.equals(flag.is.admin);
+                              done();
+                            });
+                        });
+                    });
+                });
+              });
+            });
+        });
+      });
+    });
+    it('should fail because the album is not related to any user', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfullAlbumNock(albumIndex.one);
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', userOneNotAdminLogged.body.token)
+            .then(firstRelation => {
+              successfullAlbumPhotoNock(photoIndex.two);
+              chai
+                .request(server)
+                .get(`/users/albums/${photoIndex.two}/photos`)
+                .set('authorization', userOneNotAdminLogged.body.token)
+                .catch(err => {
+                  err.should.have.status(400);
+                  done();
                 });
             });
         });
