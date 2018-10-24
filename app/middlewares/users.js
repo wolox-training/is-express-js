@@ -94,7 +94,7 @@ exports.tokenValidation = (req, res, next) => {
         req.user = u;
         const tokenDurationHours = moment
           .duration(tokenValidationMoment.diff(decodeData.tokenCreationMoment))
-          .asHours();
+          .asMinutes();
         logger.info(`DIF TIME LOG: ${JSON.stringify(tokenDurationHours)}`);
         next();
       }
