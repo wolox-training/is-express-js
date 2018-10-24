@@ -55,7 +55,7 @@ exports.signUpValidation = (req, res, next) => {
     }
   });
 };
-
+/*
 exports.signInValidation = (req, res, next) => {
   const params = req.body ? { email: req.body.email, logMoment: moment() } : {},
     emailDomain = '@wolox.com.ar',
@@ -65,6 +65,32 @@ exports.signInValidation = (req, res, next) => {
     if (!value || (params.email && !params.email.includes(emailDomain))) {
       return next(errors.invalidEmail);
     } else if (!headerToken || headerToken !== auth) {
+      req.body.auth = auth;
+      req.body.dbPass = value.password;
+      next();
+    } else {
+      return res.status(200).send('Already logged-in!');
+    }
+  });
+};
+*/
+exports.signInValidation = (req, res, next) => {
+  const params = req.body ? { email: req.body.email, logMoment: moment() } : {},
+    emailDomain = '@wolox.com.ar',
+    auth = sessionManager.encode({ email: params.email, tokenCreationMoment: params.logMoment }),
+    headerToken = req.headers.authorization ? req.headers.authorization : false;
+  let decodeData = '';
+  if (headerToken) {
+    try {
+      decodeData = sessionManager.decode(headerToken);
+    } catch (error) {
+      next(errors.invalidToken);
+    }
+  }
+  User.findOne({ where: { email: params.email } }).then(value => {
+    if (!value || (params.email && !params.email.includes(emailDomain))) {
+      return next(errors.invalidEmail);
+    } else if (!headerToken || params.email !== decodeData.email) {
       req.body.auth = auth;
       req.body.dbPass = value.password;
       next();
