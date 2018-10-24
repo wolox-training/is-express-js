@@ -2,7 +2,8 @@ const logger = require('../logger'),
   errors = require('../errors'),
   User = require('./../models').user,
   sessionManager = require('./../services/sessionManager'),
-  bcrypt = require('bcryptjs');
+  bcrypt = require('bcryptjs'),
+  moment = require('moment');
 
 exports.signUpValidation = (req, res, next) => {
   let flagAdmin;
@@ -56,9 +57,9 @@ exports.signUpValidation = (req, res, next) => {
 };
 
 exports.signInValidation = (req, res, next) => {
-  const params = req.body ? { email: req.body.email } : {},
+  const params = req.body ? { email: req.body.email, logMoment: moment() } : {},
     emailDomain = '@wolox.com.ar',
-    auth = sessionManager.encode({ email: params.email }),
+    auth = sessionManager.encode({ email: params.email, tokenCreationMoment: params.logMoment }),
     headerToken = req.headers.authorization;
   User.findOne({ where: { email: params.email } }).then(value => {
     if (!value || (params.email && !params.email.includes(emailDomain))) {
@@ -74,21 +75,27 @@ exports.signInValidation = (req, res, next) => {
 };
 
 exports.tokenValidation = (req, res, next) => {
-  const headerToken = req.headers.authorization ? req.headers.authorization : false;
+  const headerToken = req.headers.authorization ? req.headers.authorization : false,
+    tokenValidationMoment = moment();
+  logger.info(`Time you check Validation: ${JSON.stringify(tokenValidationMoment)}`);
   if (!headerToken) {
     next(errors.tokenError);
   } else {
-    let userEmail = '';
+    let decodeData = '';
     try {
-      userEmail = sessionManager.decode(headerToken);
+      decodeData = sessionManager.decode(headerToken);
     } catch (error) {
       next(errors.invalidToken);
     }
-    User.findOne({ where: userEmail }).then(u => {
+    User.findOne({ where: { email: decodeData.email } }).then(u => {
       if (!u) {
         next(errors.invalidToken);
       } else {
         req.user = u;
+        const tokenDurationHours = moment
+          .duration(tokenValidationMoment.diff(decodeData.tokenCreationMoment))
+          .asHours();
+        logger.info(`DIF TIME LOG: ${JSON.stringify(tokenDurationHours)}`);
         next();
       }
     });
