@@ -34,15 +34,24 @@ exports.userBuyAlbum = (req, res, next) => {
 };
 
 exports.printAllUserAlbums = (req, res, next) => {
-  const listOfUserAlbums = req.list.albumList,
-    userIdToPrint = req.list.userId,
-    isAdminFlag = req.user.isAdmin,
-    userIdAsking = req.user.id;
-  if (isAdminFlag) {
-    res.status(200).send({ listOfUserAlbums });
-  } else if (userIdToPrint !== userIdAsking) {
-    return next(errors.invalidUserList);
+  const isAdminFlag = req.user.isAdmin,
+    userIdAsking = req.user.id,
+    userToFind = { userId: req.params.user_id };
+  if (parseInt(userToFind.userId) === userIdAsking || isAdminFlag) {
+    logger.info(`Attempting to find all Albums of user with id: ${userToFind.userId}.`);
+    Album.getAlbumList(userToFind)
+      .then(list => {
+        if (!list.length) {
+          return next(errors.noUserAlbum);
+        } else {
+          res.status(200).send({ list });
+        }
+      })
+      .catch(error => {
+        logger.error(`Database Error. Details: ${JSON.stringify(error)}`);
+        next(error);
+      });
   } else {
-    res.status(200).send({ listOfUserAlbums });
+    return next(errors.invalidUserList);
   }
 };

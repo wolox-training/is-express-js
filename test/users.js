@@ -573,7 +573,7 @@ describe('users', () => {
       });
     });
   });
-  describe('/users/:user_id/albums GET', () => {
+  describe.only('/users/:user_id/albums GET', () => {
     it('should get all albums case isAdmin false', done => {
       successfulCreate(userList.userOne).then(res => {
         successfulLogin(userList.userOne).then(ress => {
@@ -592,7 +592,7 @@ describe('users', () => {
                     .then(resp => {
                       resp.should.have.status(200);
                       resp.should.be.json;
-                      resp.body.listOfUserAlbums.length.should.equals(2);
+                      resp.body.list.length.should.equals(2);
                       dictum.chai(resp);
                       done();
                     });
@@ -624,7 +624,7 @@ describe('users', () => {
                             .then(resp => {
                               resp.should.have.status(200);
                               resp.should.be.json;
-                              resp.body.listOfUserAlbums.length.should.equals(2);
+                              resp.body.list.length.should.equals(2);
                               userTwoNotAdmin.body.newUser.id.should.not.equals(userOneAdmin.body.newUser.id);
                               dictum.chai(resp);
                               done();
