@@ -55,3 +55,22 @@ exports.printAllUserAlbums = (req, res, next) => {
     return next(errors.invalidUserList);
   }
 };
+
+exports.printAlbumPhotos = (req, res, next) => {
+  const albumToFind = parseInt(req.params.id),
+    albumFound = req.albumFound;
+  logger.info(`Attempting to retrieve all photos from Album: ${albumToFind}.`);
+  fetch(`https://jsonplaceholder.typicode.com/photos?albumId=${albumFound.albumId}`)
+    .then(response => response.json())
+    .then(photoList => {
+      if (!photoList.length) {
+        return next(errors.nothingFound);
+      } else {
+        req.photoData = photoList;
+        res.status(200).send({ photoList });
+      }
+    })
+    .catch(error => {
+      return errors.defaultError;
+    });
+};

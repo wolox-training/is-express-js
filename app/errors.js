@@ -82,3 +82,8 @@ exports.invalidUserList = {
   statusCode: 400,
   message: 'You can not ask for other users list of albums'
 };
+
+exports.invalidUserAlbum = {
+  statusCode: 400,
+  message: 'That user does not have that album'
+};

@@ -40,5 +40,10 @@ module.exports = (sequelize, DataTypes) => {
       throw errors.databaseError;
     });
   };
+  album.getPhotos = (userToFind, albumToFind) => {
+    return album.findOne({ where: { userId: userToFind, albumId: albumToFind } }).catch(err => {
+      throw errors.databaseError;
+    });
+  };
   return album;
 };
