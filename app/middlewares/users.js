@@ -3,7 +3,9 @@ const logger = require('../logger'),
   User = require('./../models').user,
   sessionManager = require('./../services/sessionManager'),
   bcrypt = require('bcryptjs'),
-  moment = require('moment');
+  moment = require('moment'),
+  config = require('../../config').common,
+  timeout = { token: config.token.timeout };
 
 exports.signUpValidation = (req, res, next) => {
   let flagAdmin;
@@ -55,73 +57,85 @@ exports.signUpValidation = (req, res, next) => {
     }
   });
 };
-/*
-exports.signInValidation = (req, res, next) => {
-  const params = req.body ? { email: req.body.email, logMoment: moment() } : {},
-    emailDomain = '@wolox.com.ar',
-    auth = sessionManager.encode({ email: params.email, tokenCreationMoment: params.logMoment }),
-    headerToken = req.headers.authorization;
-  User.findOne({ where: { email: params.email } }).then(value => {
-    if (!value || (params.email && !params.email.includes(emailDomain))) {
-      return next(errors.invalidEmail);
-    } else if (!headerToken || headerToken !== auth) {
-      req.body.auth = auth;
-      req.body.dbPass = value.password;
-      next();
-    } else {
-      return res.status(200).send('Already logged-in!');
-    }
-  });
-};
-*/
-exports.signInValidation = (req, res, next) => {
-  const params = req.body ? { email: req.body.email, logMoment: moment() } : {},
-    emailDomain = '@wolox.com.ar',
-    auth = sessionManager.encode({ email: params.email, tokenCreationMoment: params.logMoment }),
-    headerToken = req.headers.authorization ? req.headers.authorization : false;
-  let decodeData = '';
-  if (headerToken) {
-    try {
-      decodeData = sessionManager.decode(headerToken);
-    } catch (error) {
-      next(errors.invalidToken);
-    }
+
+const emailIsNotValid = userEmail => {
+  const emailDomain = '@wolox.com.ar';
+  if (userEmail && !userEmail.includes(emailDomain)) {
+    return true;
+  } else {
+    return false;
   }
-  User.findOne({ where: { email: params.email } }).then(value => {
-    if (!value || (params.email && !params.email.includes(emailDomain))) {
-      return next(errors.invalidEmail);
-    } else if (!headerToken || params.email !== decodeData.email) {
-      req.body.auth = auth;
-      req.body.dbPass = value.password;
-      next();
+};
+
+const encoder = email => {
+  return sessionManager.encode({ email, tokenCreationMoment: moment() });
+};
+
+const decoder = token => {
+  let data = '';
+  try {
+    data = sessionManager.decode(token);
+  } catch (error) {
+    data = false;
+  }
+  return data;
+};
+
+const tokenHasExpired = token => {
+  const tokenValidationMoment = moment(),
+    tokenDurationMinutes = moment.duration(tokenValidationMoment.diff(token.tokenCreationMoment)).asMinutes();
+  if (tokenDurationMinutes >= timeout.token) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+const noUserLogged = (user, token, headerToken) => {
+  if (!headerToken || user.email !== token.email || tokenHasExpired(token.tokenCreationMoment)) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+exports.signInValidation = (req, res, next) => {
+  const userToFind = req.body ? { email: req.body.email } : {},
+    headerToken = req.headers.authorization ? req.headers.authorization : false;
+  if (emailIsNotValid(userToFind.email)) return next(errors.invalidEmail);
+  User.findOne({ where: { email: userToFind.email } }).then(userFound => {
+    if (!userFound) {
+      return next(errors.invalidUserDB);
     } else {
-      return res.status(200).send('Already logged-in!');
+      const tokenData = decoder(headerToken);
+      if (
+        noUserLogged(userToFind, tokenData, headerToken) ||
+        tokenHasExpired(tokenData.tokenCreationMoment)
+      ) {
+        logger.info(`Token will expire in ${timeout.token} minutes`);
+        req.body.auth = encoder(userFound.email);
+        req.body.dbPass = userFound.password;
+        next();
+      } else {
+        return res.status(200).send('Already logged-in!');
+      }
     }
   });
 };
 
 exports.tokenValidation = (req, res, next) => {
-  const headerToken = req.headers.authorization ? req.headers.authorization : false,
-    tokenValidationMoment = moment();
-  logger.info(`Time you check Validation: ${JSON.stringify(tokenValidationMoment)}`);
+  const headerToken = req.headers.authorization ? req.headers.authorization : false;
   if (!headerToken) {
     next(errors.tokenError);
   } else {
-    let decodeData = '';
-    try {
-      decodeData = sessionManager.decode(headerToken);
-    } catch (error) {
-      next(errors.invalidToken);
-    }
-    User.findOne({ where: { email: decodeData.email } }).then(u => {
-      if (!u) {
-        next(errors.invalidToken);
+    const tokenData = decoder(headerToken);
+    User.findOne({ where: { email: tokenData.email } }).then(userFound => {
+      if (!userFound) {
+        return next(errors.invalidToken);
+      } else if (tokenHasExpired(tokenData)) {
+        next(errors.tokenExpired);
       } else {
-        req.user = u;
-        const tokenDurationHours = moment
-          .duration(tokenValidationMoment.diff(decodeData.tokenCreationMoment))
-          .asMinutes();
-        logger.info(`DIF TIME LOG: ${JSON.stringify(tokenDurationHours)}`);
+        req.user = userFound;
         next();
       }
     });

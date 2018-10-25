@@ -2,7 +2,9 @@ const chai = require('chai'),
   dictum = require('dictum.js'),
   server = require('./../app'),
   nock = require('nock'),
-  should = chai.should();
+  should = chai.should(),
+  config = require('../config').common,
+  timeout = { token: config.token.timeout };
 
 const userList = {
     adminUser: {
@@ -843,6 +845,75 @@ describe('users', () => {
                   done();
                 });
             });
+        });
+      });
+    });
+  });
+  describe.only('Token expire Validation', () => {
+    let env;
+    before(before => {
+      env = process.env.TOKEN_TIMEOUT_MINUTES;
+      process.env.TOKEN_TIMEOUT_MINUTES = 0.0000001;
+      before();
+    });
+    it('should success because token has not expired', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfullAlbumNock(albumIndex.one);
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', userOneNotAdminLogged.body.token)
+            .then(firstRelation => {
+              successfullAlbumNock(albumIndex.two);
+              successfullRelationCreate(albumIndex.two)
+                .set('authorization', userOneNotAdminLogged.body.token)
+                .then(secondRelation => {
+                  successfullAlbumPhotoNock(photoIndex.one);
+                  chai
+                    .request(server)
+                    .get(`/users/albums/${photoIndex.one}/photos`)
+                    .set('authorization', userOneNotAdminLogged.body.token)
+                    .then(resp => {
+                      resp.should.have.status(200);
+                      resp.should.be.json;
+                      resp.body.photoList.length.should.equals(photoList[photoIndex.one].length);
+                      dictum.chai(resp);
+                      done();
+                    });
+                });
+            });
+        });
+      });
+      after(after => {
+        process.env.TOKEN_TIMEOUT_MINUTES = env;
+        after();
+      });
+    });
+    it('should fail because token has expired', done => {
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulCreate(userList.userTwo).then(usertwoNotAdmin => {
+          successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+            successfulLogin(userList.userTwo).then(usertwoNotAdminLogged => {
+              successfullAlbumNock(albumIndex.one);
+              successfullRelationCreate(albumIndex.one)
+                .set('authorization', userOneNotAdminLogged.body.token)
+                .then(firstRelation => {
+                  successfullAlbumNock(albumIndex.two);
+                  successfullRelationCreate(albumIndex.two)
+                    .set('authorization', userOneNotAdminLogged.body.token)
+                    .then(secondRelation => {
+                      successfullAlbumPhotoNock(photoIndex.one);
+                      chai
+                        .request(server)
+                        .get(`/users/albums/${photoIndex.one}/photos`)
+                        .set('authorization', usertwoNotAdminLogged.body.token)
+                        .catch(err => {
+                          err.should.have.status(400);
+                          done();
+                        });
+                    });
+                });
+            });
+          });
         });
       });
     });

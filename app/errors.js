@@ -13,6 +13,11 @@ exports.invalidEmail = {
   message: 'Invalid Email'
 };
 
+exports.invalidUserDB = {
+  statusCode: 400,
+  message: 'This user is not in the DB'
+};
+
 exports.defaultError = {
   statusCode: 400,
   message: 'Default Error'
@@ -41,6 +46,11 @@ exports.tokenError = {
 exports.invalidToken = {
   statusCode: 400,
   message: 'Token is not valid'
+};
+
+exports.tokenExpired = {
+  statusCode: 400,
+  message: 'The token has expired'
 };
 
 exports.invalidAdminUser = {
