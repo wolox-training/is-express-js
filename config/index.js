@@ -55,6 +55,9 @@ const config = {
     },
     password: {
       adminPass: 'admin123'
+    },
+    token: {
+      timeout: process.env.TOKEN_TIMEOUT_MINUTES
     }
   }
 };

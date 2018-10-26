@@ -2,7 +2,10 @@ const chai = require('chai'),
   dictum = require('dictum.js'),
   server = require('./../app'),
   nock = require('nock'),
-  should = chai.should();
+  should = chai.should(),
+  errors = require('../app/errors'),
+  config = require('../config').common,
+  timeout = { token: config.token.timeout };
 
 const userList = {
     adminUser: {
@@ -842,6 +845,40 @@ describe('users', () => {
                   err.should.have.status(400);
                   done();
                 });
+            });
+        });
+      });
+    });
+  });
+  describe('Token expire Validation', () => {
+    it('should fail because token has expired', done => {
+      process.env.TOKEN_TIMEOUT_MINUTES = 0.0000000000000001;
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfullAlbumNock(albumIndex.one);
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', userOneNotAdminLogged.body.token)
+            .catch(err => {
+              err.should.have.status(400);
+              process.env.TOKEN_TIMEOUT_MINUTES = timeout.token;
+              done();
+            });
+        });
+      });
+    });
+    it('should success because token has not expired', done => {
+      process.env.TOKEN_TIMEOUT_MINUTES = 5;
+      successfulCreate(userList.userOne).then(userOneNotAdmin => {
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfullAlbumNock(albumIndex.one);
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', userOneNotAdminLogged.body.token)
+            .then(resp => {
+              resp.should.have.status(200);
+              resp.should.be.json;
+              dictum.chai(resp);
+              process.env.TOKEN_TIMEOUT_MINUTES = timeout.token;
+              done();
             });
         });
       });

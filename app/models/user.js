@@ -1,5 +1,5 @@
 const errors = require('../errors'),
-  config = require('../../config'),
+  config = require('../../config').common,
   paging = config.paging;
 
 module.exports = (sequelize, DataTypes) => {

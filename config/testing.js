@@ -7,6 +7,9 @@ exports.config = {
     },
     session: {
       secret: 'some-super-secret'
+    },
+    token: {
+      timeout: process.env.TOKEN_TIMEOUT_MINUTES
     }
   }
 };
