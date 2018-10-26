@@ -850,7 +850,7 @@ describe('users', () => {
       });
     });
   });
-  describe.only('Token expire Validation', () => {
+  describe('Token expire Validation', () => {
     it('should fail because token has expired', done => {
       process.env.TOKEN_TIMEOUT_MINUTES = 0.0000000000000001;
       successfulCreate(userList.userOne).then(userOneNotAdmin => {

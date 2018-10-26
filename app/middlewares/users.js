@@ -5,8 +5,6 @@ const logger = require('../logger'),
   bcrypt = require('bcryptjs'),
   moment = require('moment'),
   config = require('../../config').common;
-// timeout = { token: config.token.timeout };
-// tokenTimeout = parseInt(process.env.TOKEN_TIMEOUT_MINUTES);
 
 exports.signUpValidation = (req, res, next) => {
   let flagAdmin;
