@@ -3,6 +3,7 @@ const chai = require('chai'),
   server = require('./../app'),
   nock = require('nock'),
   should = chai.should(),
+  errors = require('../app/errors'),
   config = require('../config').common,
   timeout = { token: config.token.timeout };
 
@@ -850,70 +851,35 @@ describe('users', () => {
     });
   });
   describe.only('Token expire Validation', () => {
-    let env;
-    before(before => {
-      env = process.env.TOKEN_TIMEOUT_MINUTES;
-      process.env.TOKEN_TIMEOUT_MINUTES = 0.0000001;
-      before();
-    });
-    it('should success because token has not expired', done => {
+    it('should fail because token has expired', done => {
+      process.env.TOKEN_TIMEOUT_MINUTES = 0.0000000000000001;
       successfulCreate(userList.userOne).then(userOneNotAdmin => {
         successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
           successfullAlbumNock(albumIndex.one);
           successfullRelationCreate(albumIndex.one)
             .set('authorization', userOneNotAdminLogged.body.token)
-            .then(firstRelation => {
-              successfullAlbumNock(albumIndex.two);
-              successfullRelationCreate(albumIndex.two)
-                .set('authorization', userOneNotAdminLogged.body.token)
-                .then(secondRelation => {
-                  successfullAlbumPhotoNock(photoIndex.one);
-                  chai
-                    .request(server)
-                    .get(`/users/albums/${photoIndex.one}/photos`)
-                    .set('authorization', userOneNotAdminLogged.body.token)
-                    .then(resp => {
-                      resp.should.have.status(200);
-                      resp.should.be.json;
-                      resp.body.photoList.length.should.equals(photoList[photoIndex.one].length);
-                      dictum.chai(resp);
-                      done();
-                    });
-                });
+            .catch(err => {
+              err.should.have.status(400);
+              process.env.TOKEN_TIMEOUT_MINUTES = timeout.token;
+              done();
             });
         });
       });
-      after(after => {
-        process.env.TOKEN_TIMEOUT_MINUTES = env;
-        after();
-      });
     });
-    it('should fail because token has expired', done => {
+    it('should success because token has not expired', done => {
+      process.env.TOKEN_TIMEOUT_MINUTES = 5;
       successfulCreate(userList.userOne).then(userOneNotAdmin => {
-        successfulCreate(userList.userTwo).then(usertwoNotAdmin => {
-          successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
-            successfulLogin(userList.userTwo).then(usertwoNotAdminLogged => {
-              successfullAlbumNock(albumIndex.one);
-              successfullRelationCreate(albumIndex.one)
-                .set('authorization', userOneNotAdminLogged.body.token)
-                .then(firstRelation => {
-                  successfullAlbumNock(albumIndex.two);
-                  successfullRelationCreate(albumIndex.two)
-                    .set('authorization', userOneNotAdminLogged.body.token)
-                    .then(secondRelation => {
-                      successfullAlbumPhotoNock(photoIndex.one);
-                      chai
-                        .request(server)
-                        .get(`/users/albums/${photoIndex.one}/photos`)
-                        .set('authorization', usertwoNotAdminLogged.body.token)
-                        .catch(err => {
-                          err.should.have.status(400);
-                          done();
-                        });
-                    });
-                });
+        successfulLogin(userList.userOne).then(userOneNotAdminLogged => {
+          successfullAlbumNock(albumIndex.one);
+          successfullRelationCreate(albumIndex.one)
+            .set('authorization', userOneNotAdminLogged.body.token)
+            .then(resp => {
+              resp.should.have.status(200);
+              resp.should.be.json;
+              dictum.chai(resp);
+              process.env.TOKEN_TIMEOUT_MINUTES = timeout.token;
+              done();
             });
-          });
         });
       });
     });

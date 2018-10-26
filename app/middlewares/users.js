@@ -4,8 +4,9 @@ const logger = require('../logger'),
   sessionManager = require('./../services/sessionManager'),
   bcrypt = require('bcryptjs'),
   moment = require('moment'),
-  config = require('../../config').common,
-  timeout = { token: config.token.timeout };
+  config = require('../../config').common;
+// timeout = { token: config.token.timeout };
+// tokenTimeout = parseInt(process.env.TOKEN_TIMEOUT_MINUTES);
 
 exports.signUpValidation = (req, res, next) => {
   let flagAdmin;
@@ -83,8 +84,9 @@ const decoder = token => {
 
 const tokenHasExpired = token => {
   const tokenValidationMoment = moment(),
-    tokenDurationMinutes = moment.duration(tokenValidationMoment.diff(token.tokenCreationMoment)).asMinutes();
-  if (tokenDurationMinutes >= timeout.token) {
+    tokenDurationMinutes = moment.duration(tokenValidationMoment.diff(token.tokenCreationMoment)).asMinutes(),
+    tokenTimeout = process.env.TOKEN_TIMEOUT_MINUTES; // tokenTimeout = timeout.token;
+  if (tokenDurationMinutes >= tokenTimeout) {
     return true;
   } else {
     return false;
@@ -101,7 +103,8 @@ const noUserLogged = (user, token, headerToken) => {
 
 exports.signInValidation = (req, res, next) => {
   const userToFind = req.body ? { email: req.body.email } : {},
-    headerToken = req.headers.authorization ? req.headers.authorization : false;
+    headerToken = req.headers.authorization ? req.headers.authorization : false,
+    tokenTimeout = process.env.TOKEN_TIMEOUT_MINUTES; // tokenTimeout = timeout.token;
   if (emailIsNotValid(userToFind.email)) return next(errors.invalidEmail);
   User.findOne({ where: { email: userToFind.email } }).then(userFound => {
     if (!userFound) {
@@ -112,7 +115,7 @@ exports.signInValidation = (req, res, next) => {
         noUserLogged(userToFind, tokenData, headerToken) ||
         tokenHasExpired(tokenData.tokenCreationMoment)
       ) {
-        logger.info(`Token will expire in ${timeout.token} minutes`);
+        logger.info(`Token will expire in ${tokenTimeout} minutes`);
         req.body.auth = encoder(userFound.email);
         req.body.dbPass = userFound.password;
         next();
